@@ -50,31 +50,54 @@ export default function ChatWidget() {
   }, [open]);
 
   useEffect(() => {
+    // scroll to bottom when messages update
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-
   async function sendMessage() {
     if (!input.trim()) return;
-    const userMsg: Msg = { id: String(Date.now()), role: "user", text: input };
+    const messageText = input;
+    const userMsg: Msg = { id: String(Date.now()), role: "user", text: messageText };
     setMessages((s) => [...s, userMsg]);
     setInput("");
     setIsTyping(true);
-    
-    // call chat API
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: messageText }),
       });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || errBody.message || 'Có lỗi xảy ra khi xử lý yêu cầu');
+      }
+
       const data = await res.json();
-      setIsTyping(false);
-      const assistantMsg: Msg = { id: String(Date.now() + 1), role: "assistant", text: data.reply, products: data.products };
+      if (!data) throw new Error('Không nhận được phản hồi từ server');
+
+      const assistantMsg: Msg = {
+        id: String(Date.now() + 1),
+        role: "assistant",
+        text: data.reply || data.text || 'Xin chào! Tôi có thể giúp gì cho bạn?',
+        products: data.products,
+      };
+
       setMessages((s) => [...s, assistantMsg]);
-    } catch (err) {
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Có lỗi không xác định xảy ra';
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          text: `Xin lỗi, ${errorMessage}. Vui lòng thử lại sau hoặc liên hệ hỗ trợ nếu lỗi vẫn tiếp tục.`,
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-      setMessages((s) => [...s, { id: String(Date.now() + 2), role: "assistant", text: "Có lỗi khi gửi yêu cầu. Thử lại sau." }]);
     }
   }
 
