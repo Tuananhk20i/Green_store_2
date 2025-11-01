@@ -1,0 +1,80 @@
+@startuml sequence-login
+skinparam sequence {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+  LifeLineBackgroundColor #F9FFF7
+}
+
+actor "User (Admin/Customer)" as User
+participant "Login Page" as LoginPage
+participant "Auth Context" as AuthContext
+participant "AuthAPI" as AuthAPI
+participant "Database" as DB
+participant "Admin Dashboard" as AdminDash
+participant "Customer Dashboard" as CustomerDash
+
+autonumber
+
+== Initialize Login Page ==
+User -> LoginPage : Access /login page
+activate LoginPage
+LoginPage -> AuthContext : Check current session
+activate AuthContext
+AuthContext --> LoginPage : No active session
+deactivate AuthContext
+LoginPage --> User : Display login form
+deactivate LoginPage
+
+== Login Attempt ==
+User -> LoginPage : Enter email & password
+activate LoginPage
+LoginPage -> LoginPage : Validate input format
+LoginPage -> AuthAPI : POST /api/auth/login
+activate AuthAPI
+
+AuthAPI -> AuthAPI : Validate request body
+AuthAPI -> DB : Query user by email
+activate DB
+DB --> AuthAPI : Return user data
+deactivate DB
+
+AuthAPI -> AuthAPI : Verify password hash
+AuthAPI -> AuthAPI : Generate JWT token
+
+alt Invalid Credentials
+    AuthAPI --> LoginPage : Return 401 error
+    LoginPage --> User : Show error message
+else Password Valid
+    AuthAPI --> LoginPage : Return user data & token
+    deactivate AuthAPI
+    
+    LoginPage -> AuthContext : Update auth context
+    activate AuthContext
+    AuthContext -> AuthContext : Store token & user data
+    AuthContext --> LoginPage : Context updated
+    deactivate AuthContext
+
+    alt User is Admin
+        LoginPage -> AdminDash : Redirect to /admin
+        activate AdminDash
+        AdminDash --> User : Show admin dashboard
+        deactivate AdminDash
+    else User is Customer
+        LoginPage -> CustomerDash : Redirect to /me
+        activate CustomerDash
+        CustomerDash --> User : Show customer dashboard
+        deactivate CustomerDash
+    end
+end
+deactivate LoginPage
+
+== Session Management ==
+note right of AuthContext
+    Auth Context maintains the session by:
+    1. Storing JWT in localStorage
+    2. Adding token to API requests
+    3. Handling token expiration
+    4. Auto-logout on invalid token
+end note
+
+@enduml

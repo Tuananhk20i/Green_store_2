@@ -1,0 +1,33 @@
+@startuml
+title Activity: Checkout Flow
+start
+:Open Cart page;
+if (Cart empty?) then (yes)
+  :Show "Your cart is empty";
+  stop
+else (no)
+  :Click "Proceed to checkout";
+  if (Authenticated?) then (no)
+    :Redirect to /login with returnTo=/checkout;
+    stop
+  else (yes)
+    :Select / confirm shipping address;
+    if (Has valid address?) then (no)
+      :Enter shipping address;
+    endif
+    :Select payment method;
+    :Submit payment;
+    if (Payment succeeded?) then (yes)
+      :Create Order;
+      :Clear Cart;
+      :Show order confirmation / receipt;
+      stop
+    else (no)
+      :Show payment error;
+      :Allow retry or change payment method;
+      --> :Select payment method;
+    endif
+  endif
+endif
+stop
+@enduml

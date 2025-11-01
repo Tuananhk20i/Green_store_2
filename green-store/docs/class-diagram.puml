@@ -1,0 +1,163 @@
+@startuml class-diagram
+skinparam class {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+  BorderColor #2b6a2b
+}
+
+' Domain classes
+class User {
+  - id: string
+  - email: string
+  - passwordHash: string
+  - role: string
+  - createdAt: Date
+  - updatedAt: Date
+  + verifyEmail()
+  + changePassword()
+}
+
+class Customer extends User {
+  - fullName: string
+  - phone: string
+  - addresses: Address[*]
+  - orders: Order[*]
+  + updateProfile()
+}
+
+class Admin extends User {
+  + manageProducts()
+  + manageCategories()
+  + manageOrders()
+}
+
+class Product {
+  - id: string
+  - name: string
+  - slug: string
+  - description: string
+  - price: number
+  - images: string[*]
+  - category: Category
+  - status: string
+  - createdAt: Date
+  - updatedAt: Date
+  + updateStock()
+}
+
+class Category {
+  - id: string
+  - name: string
+  - slug: string
+  - description: string
+  - parent: Category
+  - children: Category[*]
+  - products: Product[*]
+  - status: string
+  + addProduct()
+}
+
+class Cart {
+  - id: string
+  - customer: Customer
+  - items: CartItem[*]
+  + addItem()
+  + removeItem()
+  + updateItem()
+}
+
+class CartItem {
+  - id: string
+  - product: Product
+  - quantity: number
+  - price: number
+}
+
+class Order {
+  - id: string
+  - customer: Customer
+  - items: OrderItem[*]
+  - status: string
+  - total: number
+  - address: Address
+  - createdAt: Date
+  - updatedAt: Date
+  + cancel()
+  + confirmDelivery()
+}
+
+class OrderItem {
+  - id: string
+  - product: Product
+  - quantity: number
+  - price: number
+}
+
+class Address {
+  - id: string
+  - customer: Customer
+  - street: string
+  - ward: string
+  - district: string
+  - province: string
+  - phone: string
+  - isDefault: boolean
+}
+
+' API classes (simplified)
+class AuthAPI {
+  + login()
+  + logout()
+  + register()
+  + verifyEmail()
+}
+class ProductAPI {
+  + getProducts()
+  + getProductDetail()
+  + searchProducts()
+  + compareProducts()
+}
+class CategoryAPI {
+  + getCategories()
+  + createCategory()
+  + updateCategory()
+  + deleteCategory()
+}
+class CartAPI {
+  + getCart()
+  + addItem()
+  + updateItem()
+  + removeItem()
+}
+class OrderAPI {
+  + getOrders()
+  + getOrderDetail()
+  + placeOrder()
+  + cancelOrder()
+  + confirmDelivery()
+}
+
+' Component classes (React, simplified)
+class ProductCard
+class ProductList
+class CartPage
+class CheckoutPage
+class OrderPage
+class AddressForm
+class AccountMenu
+class AdminLayoutWrapper
+
+' Relationships
+User <|-- Customer
+User <|-- Admin
+Customer "1" -- "*" Address
+Customer "1" -- "*" Order
+Order "1" -- "*" OrderItem
+OrderItem "*" -- "1" Product
+Cart "1" -- "*" CartItem
+CartItem "*" -- "1" Product
+Category "1" -- "*" Product
+Category "1" -- "*" Category : children
+Product "*" -- "1" Category
+
+@enduml

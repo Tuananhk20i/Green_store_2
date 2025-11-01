@@ -1,0 +1,68 @@
+@startuml use-case-manage-profile
+left to right direction
+skinparam usecase {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+}
+
+actor Customer as "Customer (Authenticated)"
+
+' Use cases for viewing profile
+usecase "View Profile" as UC_VIEW_PROFILE
+usecase "View Personal Info" as UC_VIEW_INFO
+usecase "View Order History" as UC_VIEW_ORDERS
+usecase "View Addresses" as UC_VIEW_ADDRESSES
+
+' Use cases for updating profile
+usecase "Update Personal Info" as UC_UPDATE_INFO
+usecase "Change Password" as UC_CHANGE_PWD
+usecase "Manage Addresses" as UC_MANAGE_ADDR
+usecase "Add New Address" as UC_ADD_ADDR
+usecase "Edit Address" as UC_EDIT_ADDR
+usecase "Delete Address" as UC_DELETE_ADDR
+usecase "Set Default Address" as UC_DEFAULT_ADDR
+
+' Main flows
+Customer --> UC_VIEW_PROFILE
+UC_VIEW_PROFILE ..> UC_VIEW_INFO : include
+UC_VIEW_PROFILE ..> UC_VIEW_ORDERS : include
+UC_VIEW_PROFILE ..> UC_VIEW_ADDRESSES : include
+
+Customer --> UC_UPDATE_INFO
+Customer --> UC_CHANGE_PWD
+Customer --> UC_MANAGE_ADDR
+
+' Address management flows
+UC_MANAGE_ADDR ..> UC_ADD_ADDR : include
+UC_MANAGE_ADDR ..> UC_EDIT_ADDR : include
+UC_MANAGE_ADDR ..> UC_DELETE_ADDR : include
+UC_MANAGE_ADDR ..> UC_DEFAULT_ADDR : include
+
+' Notes
+note right of UC_UPDATE_INFO
+Fields that can be updated:
+- Full name
+- Phone number
+- Email (requires verification)
+- Date of birth
+- Profile picture
+end note
+
+note right of UC_CHANGE_PWD
+Must provide:
+- Current password
+- New password
+- Confirm new password
+Validates password strength
+end note
+
+note right of UC_MANAGE_ADDR
+Customer can have multiple
+shipping addresses and set
+one as default for checkout
+end note
+
+note "All actions require authentication" as N1
+Customer .. N1
+
+@enduml

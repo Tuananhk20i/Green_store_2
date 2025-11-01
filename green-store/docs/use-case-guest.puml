@@ -1,0 +1,39 @@
+@startuml use-case-guest
+left to right direction
+skinparam usecase {
+  BackgroundColor #F7FBF6
+}
+
+actor Guest as "Guest (Unauthenticated)"
+
+usecase "Browse Homepage" as UC01
+usecase "View Product List" as UC02
+usecase "Search Products" as UC03
+usecase "View Product Details" as UC04
+usecase "Chat with AI" as UC05
+usecase "Register" as UC06
+usecase "Login" as UC07
+usecase "View Categories" as UC08
+usecase "Open Login Modal on Add to Cart" as UC09
+
+Guest --> UC01
+Guest --> UC02
+Guest --> UC03
+Guest --> UC04
+Guest --> UC05
+Guest --> UC06
+Guest --> UC07
+Guest --> UC08
+
+' Alternate flows notes
+note right of UC09
+Guest can attempt "Add to Cart";
+client should redirect to `/login` or open auth modal.
+After successful login, pending action may be replayed.
+end note
+
+' Include relations
+UC04 .> UC09 : include
+UC02 .> UC03 : include
+
+@enduml

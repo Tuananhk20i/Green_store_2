@@ -1,0 +1,36 @@
+@startuml
+title Sequence: Add to Cart (Guest -> Login -> Restore) / Authenticated
+actor User
+participant "Browser / UI" as Browser
+participant "Client App (Next.js)" as Client
+participant "Auth Service / UI" as Auth
+participant "Cart API" as API
+participant "Database / Cart Store" as DB
+
+User -> Browser: Click "Add to Cart"
+Browser -> Client: client-side handler (click)
+alt User not authenticated
+  Client -> Auth: navigate to /login?next=/product/slug&pendingAdd=true
+  note right of Client
+    Client saves pending add (product id, qty, returnTo)
+  end note
+  Auth -> Browser: show login page / modal
+  User -> Auth: submit credentials
+  Auth -> API: POST /api/auth/login
+  API -> Auth: 200 OK + token
+  Auth -> Client: set auth state (cookie/localStorage)
+  Client -> Client: restore pending action
+  Client -> API: POST /api/cart/items (replay add)
+  API -> DB: add item to cart
+  DB --> API: 201 Created
+  API --> Client: 201 Created
+  Client -> Browser: update UI (mini-cart, toast)
+else User authenticated
+  Client -> API: POST /api/cart/items
+  API -> DB: add item to cart
+  DB --> API: 201 Created
+  API --> Client: 201 Created
+  Client -> Browser: update UI (mini-cart, toast)
+end
+
+@enduml

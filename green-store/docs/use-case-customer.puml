@@ -1,0 +1,50 @@
+@startuml use-case-customer
+left to right direction
+skinparam usecase {
+  BackgroundColor #F0FFF4
+}
+
+actor Customer as "Customer (Authenticated)"
+
+usecase "Browse & Search" as UC_BROWSE
+usecase "View Product Details" as UC_VIEW
+usecase "Add to Cart" as UC_ADD
+usecase "View Cart" as UC_CART
+usecase "Update Cart Items" as UC_UPDATE
+usecase "Remove from Cart" as UC_REMOVE
+usecase "Checkout" as UC_CHECKOUT
+usecase "Manage Addresses" as UC_ADDRS
+usecase "Manage Account" as UC_ACCOUNT
+usecase "View Orders" as UC_ORDERS
+usecase "Cancel Order" as UC_CANCEL
+usecase "Chat with AI" as UC_CHAT
+usecase "Logout" as UC_LOGOUT
+
+Customer --> UC_BROWSE
+Customer --> UC_VIEW
+Customer --> UC_ADD
+Customer --> UC_CART
+Customer --> UC_UPDATE
+Customer --> UC_REMOVE
+Customer --> UC_CHECKOUT
+Customer --> UC_ADDRS
+Customer --> UC_ACCOUNT
+Customer --> UC_ORDERS
+Customer --> UC_CANCEL
+Customer --> UC_CHAT
+Customer --> UC_LOGOUT
+
+' Relations
+UC_VIEW .> UC_ADD : include
+UC_ADD .> UC_CART : include
+UC_CART .> UC_CHECKOUT : include
+UC_ORDERS .> UC_CANCEL : include
+
+note left of UC_CHECKOUT
+Preconditions:
+ - Customer must be authenticated
+ - Cart must be non-empty
+ - At least one valid shipping address
+end note
+
+@enduml

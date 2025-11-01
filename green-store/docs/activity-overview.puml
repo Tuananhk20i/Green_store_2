@@ -1,0 +1,46 @@
+@startuml activity-overview
+' Activity Diagram: Green Store Project Overview
+' Covers Guest, User, Admin flows
+
+start
+partition Guest {
+  :Browse homepage;
+  :Search products;
+  :View product details;
+  :Chat with AI chatbot;
+  :Register account;
+  :Login;
+}
+if (Authenticated?) then (yes)
+  partition User {
+    :View profile;
+    :Update info;
+    :Manage addresses;
+    :Add product to cart;
+    :View cart;
+    :Update cart items;
+    :Remove cart items;
+    :Checkout;
+    :View orders;
+    :View order details;
+    :Cancel order (if pending);
+    :Logout;
+  }
+else (no)
+  :Redirect to login for restricted actions;
+endif
+partition Admin {
+  :Login as admin;
+  :View dashboard;
+  :Manage products (CRUD);
+  :Manage inventory;
+  :Manage orders (update status);
+  :View order details;
+  :Manage users (lock/unlock);
+  :View user purchase history;
+  :Manage promotions (CRUD);
+  :View revenue reports;
+  :View statistics;
+}
+stop
+@enduml

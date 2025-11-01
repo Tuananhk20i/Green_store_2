@@ -1,0 +1,69 @@
+@startuml activity-login
+skinparam activity {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+  BorderColor #2b6a2b
+}
+
+|User|
+start
+:Open /login page;
+:Display login form;
+
+partition Client {
+  :Enter email & password;
+  :Client-side validation (format/required);
+  if (validation OK?) then (yes)
+    :Click "Sign in";
+  else (no)
+    :Show validation errors;
+    stop
+  endif
+}
+
+partition Server {
+  :POST /api/auth/login (email, password);
+  :Server-side validate request body;
+  :Lookup user by email;
+  if (user found?) then (yes)
+    :Verify password hash;
+    if (password valid?) then (yes)
+      :Generate JWT token / session;
+      :Return success + user data (role);
+    else (no)
+      :Return 401 Unauthorized (invalid credentials);
+    endif
+  else (no)
+    :Return 401 Unauthorized (user not found);
+  endif
+}
+
+if (login success?) then (yes)
+  :AuthContext / Client stores token (localStorage or cookie);
+  :Attach token to subsequent API requests;
+  if (role == "admin") then (admin)
+    :Redirect to /admin;
+  else (customer)
+    :Redirect to /me (customer dashboard);
+  endif
+  stop
+else (no)
+  :Show error message on login form;
+  if (user chooses "Forgot password") then (yes)
+    :Go to password reset flow (POST /api/auth/forgot-password);
+  else (no)
+    :User may retry login;
+  endif
+  stop
+endif
+
+' Notes
+note right
+Important:
+- Client-side validation reduces roundtrips.
+- Server must rate-limit attempts and throttle brute-force.
+- Tokens must be stored securely (httpOnly cookie preferred for XSS protection).
+- AuthContext is responsible for session refresh/expiry handling.
+end note
+
+@enduml

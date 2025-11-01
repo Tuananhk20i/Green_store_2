@@ -1,0 +1,112 @@
+@startuml use-case-manage-categories
+left to right direction
+skinparam usecase {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+}
+
+actor Admin as "Admin"
+actor System as "System"
+
+' Main use cases for category management
+usecase "View Categories in Admin Panel" as UC_VIEW_ADMIN
+usecase "View Category Products" as UC_VIEW_PRODUCTS
+usecase "Create New Category" as UC_CREATE
+usecase "Update Category" as UC_UPDATE
+usecase "Delete Category" as UC_DELETE
+
+' API-related use cases
+usecase "GET /api/categories" as UC_API_LIST
+usecase "GET /api/products/by-category" as UC_API_PRODUCTS
+usecase "POST /api/admin/categories" as UC_API_CREATE
+usecase "PUT /api/admin/categories/{id}" as UC_API_UPDATE
+usecase "DELETE /api/admin/categories/{id}" as UC_API_DELETE
+
+' Validation use cases
+usecase "Validate Category Data" as UC_VALIDATE
+usecase "Generate Category Slug" as UC_SLUG
+usecase "Handle Category Image" as UC_IMAGE
+
+' Main flows for Admin
+Admin --> UC_VIEW_ADMIN
+Admin --> UC_VIEW_PRODUCTS
+Admin --> UC_CREATE
+Admin --> UC_UPDATE
+Admin --> UC_DELETE
+
+' System interactions
+System --> UC_API_LIST
+System --> UC_API_PRODUCTS
+System --> UC_API_CREATE
+System --> UC_API_UPDATE
+System --> UC_API_DELETE
+
+' Include relationships
+UC_VIEW_ADMIN ..> UC_API_LIST : include
+UC_VIEW_PRODUCTS ..> UC_API_PRODUCTS : include
+UC_CREATE ..> UC_API_CREATE : include
+UC_UPDATE ..> UC_API_UPDATE : include
+UC_DELETE ..> UC_API_DELETE : include
+
+' Additional flows
+UC_CREATE ..> UC_VALIDATE : include
+UC_CREATE ..> UC_SLUG : include
+UC_CREATE ..> UC_IMAGE : include
+
+UC_UPDATE ..> UC_VALIDATE : include
+UC_UPDATE ..> UC_SLUG : include
+UC_UPDATE ..> UC_IMAGE : extend
+
+' Notes
+note right of UC_CREATE
+Required fields:
+- Category name
+- Description
+- Parent category ID (optional)
+- Image file (optional)
+- Status (active/inactive)
+
+System auto-generates:
+- Slug from name
+- Created timestamp
+- Last updated timestamp
+end note
+
+note right of UC_UPDATE
+Updatable fields:
+- Category name
+- Description
+- Parent category ID
+- Image file
+- Status
+- Display order
+
+System updates:
+- Slug if name changes
+- Last updated timestamp
+end note
+
+note right of UC_DELETE
+Validation checks:
+- Admin permission check
+- No active products in category
+- No child categories exist
+
+Options:
+- Soft delete (status update)
+- Hard delete (if conditions met)
+end note
+
+note right of UC_API_LIST
+Supports:
+- Pagination
+- Sorting
+- Filtering by status
+- Search by name
+- Parent/child hierarchy
+end note
+
+note "All admin actions require authentication" as N1
+Admin .. N1
+
+@enduml
