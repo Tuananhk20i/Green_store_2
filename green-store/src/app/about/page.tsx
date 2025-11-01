@@ -145,10 +145,10 @@ export default function About() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">OUR GALLERY</h3>
               <div className="flex items-center gap-3 text-sm opacity-90">
-                <span className="px-2 py-1 border border-white/20">VEGETABLES</span>
-                <span className="px-2 py-1 border border-white/20">FRUITS & DRINKS</span>
-                <span className="px-2 py-1 border border-white/20">FRESH MEAT</span>
-                <span className="px-2 py-1 border border-white/20">BEAUTY CARE</span>
+                <span className="px-2 py-1 border border-white/20">Rau củ</span>
+                <span className="px-2 py-1 border border-white/20">Trái cây & Nước uống</span>
+                <span className="px-2 py-1 border border-white/20">Thịt tươi</span>
+                <span className="px-2 py-1 border border-white/20">Chăm sóc sắc đẹp</span>
               </div>
             </div>
 
