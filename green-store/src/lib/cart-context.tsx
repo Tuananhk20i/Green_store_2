@@ -27,6 +27,7 @@ interface CartContextType {
   addToCart: (productId: number, qty: number) => Promise<boolean>
   updateCartItem: (itemId: number, qty: number) => Promise<boolean>
   removeFromCart: (itemId: number) => Promise<boolean>
+  calculateTotal: () => number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -187,6 +188,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [token])
 
+  const calculateTotal = () => {
+    if (!cart?.items) return 0;
+    return cart.items.reduce((total, item) => {
+      return total + (item.unitPriceSnapshot * item.qty);
+    }, 0);
+  };
+
   return (
     <CartContext.Provider value={{
       cart,
@@ -194,7 +202,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       refreshCart,
       addToCart,
       updateCartItem,
-      removeFromCart
+      removeFromCart,
+      calculateTotal,
     }}>
       {children}
     </CartContext.Provider>

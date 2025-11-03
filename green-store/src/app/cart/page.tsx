@@ -58,6 +58,7 @@ export default function CartPage() {
   })
   const [addressFormErrors, setAddressFormErrors] = useState<{[key: string]: string}>({})
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VNPAY'>('COD')
 
   // Disable body scroll when modal is open
   useEffect(() => {
@@ -310,20 +311,59 @@ export default function CartPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          addressId: selectedAddressId
+          addressId: selectedAddressId,
+          paymentMethod: paymentMethod,
+          items: cart?.items || []
         })
       })
 
       const data = await response.json()
-      
-      if (data.success) {
-        toast.success('Đặt hàng thành công!')
-        await refreshCart() // Refresh cart to clear it
-        setShowCheckoutModal(false)
-        router.push('/orders') // Redirect to orders page
-      } else {
+
+      if (!data.success) {
         toast.error(data.error || 'Có lỗi xảy ra khi đặt hàng')
+        setCheckoutLoading(false)
+        return
       }
+
+      const order = data.data.order
+
+      // If user selected VNPay, create VNPay payment URL and redirect
+      if (paymentMethod === 'VNPAY') {
+        try {
+          const payRes = await fetch('/api/payment/vnpay/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: order.id,
+              amount: order.total,
+              orderInfo: `Thanh toan don hang #${order.id}`,
+            }),
+          })
+
+          if (!payRes.ok) {
+            const err = await payRes.json().catch(() => ({}))
+            toast.error(err?.error || 'Không thể tạo đường dẫn thanh toán')
+            setCheckoutLoading(false)
+            return
+          }
+
+          const { paymentUrl } = await payRes.json()
+          // Redirect user to VNPay
+          window.location.href = paymentUrl
+          return
+        } catch (err) {
+          console.error('Error creating VNPay payment:', err)
+          toast.error('Không thể khởi tạo thanh toán VNPay')
+          setCheckoutLoading(false)
+          return
+        }
+      }
+
+      // For COD or other methods, finalize locally
+      toast.success('Đặt hàng thành công!')
+      await refreshCart() // Refresh cart to clear it
+      setShowCheckoutModal(false)
+      router.push('/orders') // Redirect to orders page
     } catch (error) {
       console.error('Error during checkout:', error)
       toast.error('Có lỗi xảy ra khi đặt hàng')
@@ -677,6 +717,36 @@ export default function CartPage() {
                       <span className="text-lg font-bold text-blue-600">{formatPrice(calculateTotal())}</span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Payment Method Selector */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Phương thức thanh toán</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="COD"
+                      checked={paymentMethod === 'COD'}
+                      onChange={() => setPaymentMethod('COD')}
+                      className="form-radio h-4 w-4 text-green-600"
+                    />
+                    <span>Thanh toán khi nhận hàng (COD)</span>
+                  </label>
+
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="VNPAY"
+                      checked={paymentMethod === 'VNPAY'}
+                      onChange={() => setPaymentMethod('VNPAY')}
+                      className="form-radio h-4 w-4 text-green-600"
+                    />
+                    <span>Thanh toán qua VNPay</span>
+                  </label>
                 </div>
               </div>
 

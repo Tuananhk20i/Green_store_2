@@ -1,63 +1,126 @@
-@startuml
-left to right direction
+@startuml Green Store Use Cases
+
 skinparam usecase {
-  BackgroundColor<<Customer>> #EFEFEF
+    BackgroundColor<<Guest>> #E8F5E9
+    BackgroundColor<<Customer>> #C8E6C9
+    BackgroundColor<<Admin>> #A5D6A7
+    ArrowColor #2E7D32
+    BorderColor #2E7D32
 }
 
-actor Guest as "Guest (Unauthenticated)"
-actor Customer as "Customer (Authenticated)"
-actor Admin as "Admin"
+left to right direction
 
-usecase "Browse Products" as UC_BROWSE
-usecase "Search Products" as UC_SEARCH
-usecase "View Product Details" as UC_VIEW
-usecase "Add to Cart" as UC_ADD
-usecase "View Cart" as UC_CART
-usecase "Checkout" as UC_CHECKOUT
-usecase "Manage Account" as UC_ACCOUNT
-usecase "Login / Register" as UC_AUTH
-usecase "Chat / Contact" as UC_CHAT
+' Actors
+actor "Guest" as guest
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Payment System" as payment << system >>
 
-usecase "Manage Products" as UC_MGMT_PRODUCTS
-usecase "Manage Orders" as UC_MGMT_ORDERS
-usecase "View Revenue / Reports" as UC_REPORTS
+' Inheritance
+customer --|> guest
 
-' Actors -> Use cases
-Guest --> UC_BROWSE
-Guest --> UC_SEARCH
-Guest --> UC_VIEW
-Guest --> UC_AUTH
-Guest --> UC_CHAT
+rectangle "Green Store E-commerce System" {
+    ' Guest Use Cases
+    package "Guest Features" {
+        usecase "Browse Products" as UC1 <<Guest>>
+        usecase "View Product Details" as UC2 <<Guest>>
+        usecase "Search Products" as UC3 <<Guest>>
+        usecase "View Categories" as UC4 <<Guest>>
+        usecase "Add to Cart" as UC5 <<Guest>>
+        usecase "View Cart" as UC6 <<Guest>>
+        usecase "Register Account" as UC7 <<Guest>>
+        usecase "Login" as UC8 <<Guest>>
+        usecase "Contact Support" as UC9 <<Guest>>
+        usecase "View News/Blog" as UC10 <<Guest>>
+        usecase "Use Chat Assistant" as UC11 <<Guest>>
+    }
 
-Customer --> UC_BROWSE
-Customer --> UC_SEARCH
-Customer --> UC_VIEW
-Customer --> UC_ADD
-Customer --> UC_CART
-Customer --> UC_CHECKOUT
-Customer --> UC_ACCOUNT
-Customer --> UC_CHAT
-Customer --> UC_AUTH
+    ' Customer Use Cases
+    package "Customer Features" {
+        usecase "Manage Profile" as UC12 <<Customer>>
+        usecase "Manage Addresses" as UC13 <<Customer>>
+        usecase "Place Order" as UC14 <<Customer>>
+        usecase "View Order History" as UC15 <<Customer>>
+        usecase "Track Orders" as UC16 <<Customer>>
+        usecase "Cancel Order" as UC17 <<Customer>>
+        usecase "Confirm Delivery" as UC18 <<Customer>>
+        usecase "Rate Products" as UC19 <<Customer>>
+        usecase "Save Payment Info" as UC20 <<Customer>>
+    }
 
-Admin --> UC_MGMT_PRODUCTS
-Admin --> UC_MGMT_ORDERS
-Admin --> UC_REPORTS
-Admin --> UC_AUTH
+    ' Admin Use Cases
+    package "Admin Features" {
+        usecase "Manage Products" as UC21 <<Admin>>
+        usecase "Manage Categories" as UC22 <<Admin>>
+        usecase "Manage Orders" as UC23 <<Admin>>
+        usecase "Manage Users" as UC24 <<Admin>>
+        usecase "Manage Promotions" as UC25 <<Admin>>
+        usecase "View Revenue Reports" as UC26 <<Admin>>
+        usecase "Process Orders" as UC27 <<Admin>>
+        usecase "Update Order Status" as UC28 <<Admin>>
+    }
 
-' Use case relations
-UC_VIEW .> UC_ADD : include
-UC_ADD .> UC_CART : include
-UC_CART .> UC_CHECKOUT : include
+    ' Payment Features
+    package "Payment Features" {
+        usecase "Process Payment" as UC29
+        usecase "Generate Invoice" as UC30
+    }
+}
 
-' Notes and important alternate flow
-note right of UC_ADD
-If a Guest triggers "Add to Cart":
-  - the app redirects to /login (or shows auth modal)
-  - after successful login, user may be returned to previous page
-end note
+' Guest associations
+guest --> UC1
+guest --> UC2
+guest --> UC3
+guest --> UC4
+guest --> UC5
+guest --> UC6
+guest --> UC7
+guest --> UC8
+guest --> UC9
+guest --> UC10
+guest --> UC11
 
-note left of UC_CHECKOUT
-Checkout requires authenticated Customer and a non-empty cart
-end note
+' Customer associations
+customer --> UC12
+customer --> UC13
+customer --> UC14
+customer --> UC15
+customer --> UC16
+customer --> UC17
+customer --> UC18
+customer --> UC19
+customer --> UC20
+
+' Admin associations
+admin --> UC21
+admin --> UC22
+admin --> UC23
+admin --> UC24
+admin --> UC25
+admin --> UC26
+admin --> UC27
+admin --> UC28
+
+' Payment System associations
+payment --> UC29
+payment --> UC30
+
+' Include relationships
+UC14 ..> UC29 : <<include>>
+UC14 ..> UC30 : <<include>>
+UC27 ..> UC28 : <<include>>
+UC5 ..> UC6 : <<include>>
+
+' Notes
+note "Khách có thể xem sản phẩm,\ngiỏ hàng và đăng ký\ntài khoản" as N1
+N1 .. guest
+
+note "Khách hàng đã đăng ký\ncó thể đặt hàng và\nquản lý tài khoản" as N2
+N2 .. customer
+
+note "Quản trị viên có quyền\nquản lý toàn bộ\nhệ thống" as N3
+N3 .. admin
+
+@enduml
 
 @enduml
