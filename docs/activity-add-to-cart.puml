@@ -1,0 +1,82 @@
+@startuml activity-add-to-cart
+skinparam activity {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+  BorderColor #2b6a2b
+}
+
+|Customer|
+start
+:Open product page or product list;
+:Select product and quantity;
+
+partition Client {
+  :Client-side validation (quantity > 0, within per-user limit);
+  if (validation OK?) then (yes)
+    :Click "Add to cart";
+  else (no)
+    :Show validation errors (invalid qty);
+    stop
+  endif
+
+  note right
+    If the user is not authenticated,
+    app may redirect to /login and resume
+    the pending add-to-cart action after login.
+  end note
+}
+
+partition Server {
+  :POST /api/cart/items (productId, quantity);
+  :Server-side validate request body;
+  :Check product existence;
+  if (product exists?) then (yes)
+    :Check available stock;
+    if (stock >= requested qty?) then (yes)
+      :Check per-order/per-user limits;
+      if (within limits?) then (yes)
+        :Add or update cart item in DB;
+        :Recalculate cart totals;
+        :Return 200 OK + updated cart;
+      else (no)
+        :Return 400 Bad Request (quantity limit exceeded);
+      endif
+    else (no)
+      :Return 409 Conflict (insufficient stock);
+    endif
+  else (no)
+    :Return 404 Not Found (product removed);
+  endif
+}
+
+partition Client {
+  if (response 200?) then (yes)
+    :Update CartContext / MiniCart UI with new totals;
+    :Show success toast ("Added to cart");
+    if (user opens cart?) then (yes)
+      :Navigate to /cart page;
+    else (no)
+      :Remain on product page
+    endif
+  else (no)
+    if (response 401?) then (yes)
+      :Redirect to /login (or prompt sign-in modal);
+    else if (response 409?) then (conflict)
+      :Show "Out of stock" message and expected availability;
+    else
+      :Show error message (server error or validation message);
+    endif
+  endif
+}
+
+stop
+
+note right
+Implementation notes:
+- Use optimistic UI updates with rollback on failure for snappier UX.
+- Rate-limit add-to-cart requests to avoid accidental duplicate items.
+- Prefer idempotent server operations: upsert cart item by productId.
+- For guests, store pending action in localStorage and replay after login.
+end note
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml use-case-admin
+left to right direction
+skinparam usecase {
+  BackgroundColor #FFF8F0
+}
+
+actor Admin as "Admin"
+
+usecase "Admin Login" as A_LOGIN
+usecase "View Dashboard" as A_DASH
+usecase "Manage Products (CRUD)" as A_PRODUCTS
+usecase "Manage Inventory" as A_INVENTORY
+usecase "Manage Orders" as A_ORDERS
+usecase "Update Order Status" as A_STATUS
+usecase "Manage Users" as A_USERS
+usecase "Manage Promotions" as A_PROMO
+usecase "View Revenue / Reports" as A_REPORTS
+
+Admin --> A_LOGIN
+Admin --> A_DASH
+Admin --> A_PRODUCTS
+Admin --> A_INVENTORY
+Admin --> A_ORDERS
+Admin --> A_STATUS
+Admin --> A_USERS
+Admin --> A_PROMO
+Admin --> A_REPORTS
+
+note right of A_PRODUCTS
+Typical tasks: create, update, delete products; upload images; set stock and pricing.
+end note
+
+note left of A_ORDERS
+Admin may change order state: pending → paid → shipped → delivered
+end note
+
+@enduml

@@ -1,0 +1,134 @@
+@startuml sequence-overview
+' Main sequence flows for Green Store project
+
+' Style and participants
+skinparam responseMessageBelowArrow true
+
+actor Guest
+actor User
+actor Admin
+participant "UI / Browser" as UI
+participant "Next.js App" as App
+participant "Auth Service" as Auth
+participant "Product Service" as Products
+participant "Cart Service" as Cart
+participant "Order Service" as Orders
+participant "User Service" as Users
+participant "Admin Service" as AdminSvc
+participant "AI Chatbot" as Chatbot
+database "Database" as DB
+
+' Guest Flow
+group Guest Flow
+    Guest -> UI: Visit homepage
+    UI -> Products: GET /api/products
+    Products -> DB: Query products
+    DB --> Products: Return products
+    Products --> UI: Display products
+
+    Guest -> UI: Search products
+    UI -> Products: GET /api/products/search
+    Products -> DB: Search query
+    DB --> Products: Results
+    Products --> UI: Show results
+
+    Guest -> UI: View product details
+    UI -> Products: GET /api/products/[slug]
+    Products -> DB: Get product
+    DB --> Products: Product data
+    Products --> UI: Display details
+
+    Guest -> UI: Chat with AI
+    UI -> Chatbot: POST /api/chat
+    Chatbot -> Products: Search related products
+    Products --> Chatbot: Product suggestions
+    Chatbot --> UI: AI response
+end
+
+' Authentication Flow
+group Authentication
+    Guest -> UI: Click Register
+    UI -> Auth: POST /api/auth/register
+    Auth -> DB: Create user
+    DB --> Auth: User created
+    Auth --> UI: Success + token
+
+    Guest -> UI: Login
+    UI -> Auth: POST /api/auth/login
+    Auth -> DB: Verify credentials
+    DB --> Auth: User found
+    Auth --> UI: JWT token
+    UI -> App: Store token
+    note right: User now authenticated
+end
+
+' User Shopping Flow
+group Shopping (Authenticated User)
+    User -> UI: Add to cart
+    UI -> Cart: POST /api/cart/items
+    Cart -> DB: Save cart item
+    DB --> Cart: Updated cart
+    Cart --> UI: Cart updated
+
+    User -> UI: View cart
+    UI -> Cart: GET /api/cart
+    Cart -> DB: Get cart items
+    DB --> Cart: Cart data
+    Cart --> UI: Display cart
+
+    User -> UI: Checkout
+    UI -> Orders: POST /api/checkout
+    Orders -> DB: Create order
+    DB --> Orders: Order created
+    Orders --> UI: Order confirmation
+
+    User -> UI: View orders
+    UI -> Orders: GET /api/orders
+    Orders -> DB: Get user orders
+    DB --> Orders: Order history
+    Orders --> UI: Display orders
+end
+
+' User Account Management
+group Account Management
+    User -> UI: View profile
+    UI -> Users: GET /api/me
+    Users -> DB: Get user data
+    DB --> Users: User info
+    Users --> UI: Display profile
+
+    User -> UI: Update address
+    UI -> Users: POST /api/me/addresses
+    Users -> DB: Save address
+    DB --> Users: Updated
+    Users --> UI: Success
+end
+
+' Admin Flow
+group Admin Management
+    Admin -> UI: Login as admin
+    UI -> Auth: POST /api/auth/login
+    Auth -> DB: Verify admin
+    DB --> Auth: Admin verified
+    Auth --> UI: Admin token
+
+    Admin -> UI: View dashboard
+    UI -> AdminSvc: GET /api/admin/revenue
+    AdminSvc -> DB: Get statistics
+    DB --> AdminSvc: Analytics data
+    AdminSvc --> UI: Display dashboard
+
+    Admin -> UI: Manage products
+    UI -> AdminSvc: GET /api/admin/products
+    AdminSvc -> DB: Get all products
+    DB --> AdminSvc: Product list
+    AdminSvc --> UI: Display products
+
+    Admin -> UI: Update order status
+    UI -> AdminSvc: POST /api/orders/[id]/status
+    AdminSvc -> DB: Update status
+    DB --> AdminSvc: Updated
+    AdminSvc --> UI: Success
+end
+
+@enduml

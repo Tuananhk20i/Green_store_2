@@ -1,0 +1,134 @@
+@startuml sequence-checkout
+skinparam sequence {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+  LifeLineBackgroundColor #F9FFF7
+}
+
+actor "Customer" as Customer
+participant "Cart UI / Checkout Page" as CheckoutUI
+participant "Cart Service" as CartAPI
+participant "Address Service" as AddressAPI
+participant "Shipping Service" as ShippingAPI
+participant "Payment Gateway" as PaymentGateway
+participant "Checkout API" as CheckoutAPI
+participant "Orders Service" as OrdersAPI
+participant "Inventory Service" as Inventory
+participant "Email Service" as Mail
+participant "Database" as DB
+
+autonumber
+
+== Customer starts checkout ==
+Customer -> CheckoutUI : Click "Checkout" from cart
+activate CheckoutUI
+CheckoutUI -> CartAPI : GET /api/cart
+activate CartAPI
+CartAPI -> DB : Read cart items
+DB --> CartAPI : Return cart items
+deactivate CartAPI
+CheckoutUI --> Customer : Show cart summary & proceed button
+deactivate CheckoutUI
+
+== Select address & shipping method ==
+Customer -> CheckoutUI : Select shipping address
+activate CheckoutUI
+CheckoutUI -> AddressAPI : GET /api/me/addresses or select existing
+activate AddressAPI
+AddressAPI -> DB : Read customer's addresses
+DB --> AddressAPI : Return addresses
+deactivate AddressAPI
+CheckoutUI -> ShippingAPI : POST /api/checkout/shipping-calc (cart, address)
+activate ShippingAPI
+ShippingAPI -> CheckoutAPI : (optional) request rates
+ShippingAPI --> CheckoutUI : Return shipping options & costs
+deactivate ShippingAPI
+CheckoutUI --> Customer : Show shipping options & costs
+
+== Review & confirm payment method ==
+Customer -> CheckoutUI : Choose payment method & confirm
+CheckoutUI -> CheckoutAPI : POST /api/checkout (cart, address, paymentMethod)
+activate CheckoutAPI
+
+== Server validates cart and reserves stock ==
+CheckoutAPI -> Inventory : POST /api/inventory/hold (items)
+activate Inventory
+Inventory -> DB : Check product stock levels
+DB --> Inventory : Return stock availability
+alt any item out of stock
+    Inventory --> CheckoutAPI : 409 Conflict (insufficient stock)
+    deactivate Inventory
+    CheckoutAPI --> CheckoutUI : 409 (insufficient stock)
+    deactivate CheckoutAPI
+    CheckoutUI --> Customer : Show out-of-stock message; stop
+else stock reserved
+    Inventory --> CheckoutAPI : 200 OK (reserved)
+    deactivate Inventory
+
+    CheckoutAPI -> OrdersAPI : Create order record (status: pending)
+    activate OrdersAPI
+    OrdersAPI -> DB : Insert order + items
+    DB --> OrdersAPI : Order saved (orderId)
+    OrdersAPI --> CheckoutAPI : orderId, order details
+    deactivate OrdersAPI
+
+    CheckoutAPI -> PaymentGateway : Charge payment (paymentMethod, amount)
+    activate PaymentGateway
+    PaymentGateway -> PaymentGateway : Process payment (external)
+    alt payment success
+        PaymentGateway --> CheckoutAPI : 200 Payment OK (transaction id)
+        deactivate PaymentGateway
+
+        CheckoutAPI -> OrdersAPI : Update order status -> paid
+        activate OrdersAPI
+        OrdersAPI -> DB : Update order status, save transaction id
+        DB --> OrdersAPI : Update confirmation
+        deactivate OrdersAPI
+
+        CheckoutAPI -> Inventory : POST /api/inventory/commit (release holds -> decrement stock)
+        activate Inventory
+        Inventory -> DB : Decrement stock quantities
+        DB --> Inventory : Confirmation
+        deactivate Inventory
+
+        CheckoutAPI -> Mail : POST /api/send-order-confirmation (orderId, customerEmail)
+        activate Mail
+        Mail -> DB : Use order data to build email
+        Mail --> CheckoutAPI : 200 Email queued
+        deactivate Mail
+
+        CheckoutAPI --> CheckoutUI : 200 OK (orderId)
+        deactivate CheckoutAPI
+
+        CheckoutUI -> Customer : Redirect to /orders/{orderId} (show confirmation)
+    else payment failed
+        PaymentGateway --> CheckoutAPI : 402 Payment Required / error
+        deactivate PaymentGateway
+
+        CheckoutAPI -> OrdersAPI : Update order status -> payment_failed or cancelled
+        activate OrdersAPI
+        OrdersAPI -> DB : Update order status
+        DB --> OrdersAPI : Updated
+        deactivate OrdersAPI
+
+        CheckoutAPI -> Inventory : POST /api/inventory/release (release holds)
+        activate Inventory
+        Inventory -> DB : Release reserved stock
+        DB --> Inventory : Confirmation
+        deactivate Inventory
+
+        CheckoutAPI --> CheckoutUI : 402 Payment Failed (message)
+        deactivate CheckoutAPI
+
+        CheckoutUI --> Customer : Show payment failure, offer retry
+    end
+end
+
+== Post-checkout ==
+note right
+- System should log audit events for order creation and payment.
+- On payment success: emit events for fulfillment pipeline (shipping).
+- On failure: surface clear error messages and allow retry/alternate payment.
+end note
+
+@enduml

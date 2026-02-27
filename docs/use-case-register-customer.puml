@@ -1,0 +1,80 @@
+@startuml use-case-register-customer
+left to right direction
+skinparam usecase {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+}
+
+actor Guest as "Guest (Unauthenticated)"
+actor Customer as "Customer (Authenticated)"
+actor "Email Service" as Mail
+
+' Use cases
+usecase "Open Registration Form" as UC_OPEN
+usecase "Client-side Validate" as UC_CLIENT_VALIDATE
+usecase "Submit Registration" as UC_SUBMIT
+usecase "Server-side Validate" as UC_SERVER_VALIDATE
+usecase "Create Account (unverified)" as UC_CREATE
+usecase "Send Verification Email" as UC_VERIFY_SEND
+usecase "Click Verify Link" as UC_VERIFY
+usecase "Mark Account Verified" as UC_MARK_VERIFIED
+usecase "Auto Login (optional)" as UC_AUTO_LOGIN
+usecase "Show Validation Errors" as UC_ERRORS
+usecase "Resend Verification Email" as UC_RESEND
+
+' Main flow
+Guest --> UC_OPEN
+Guest --> UC_CLIENT_VALIDATE
+Guest --> UC_SUBMIT
+
+UC_SUBMIT .> UC_CLIENT_VALIDATE : include
+UC_SUBMIT .> UC_SERVER_VALIDATE : include
+UC_SERVER_VALIDATE .> UC_CREATE : include
+UC_CREATE .> UC_VERIFY_SEND : include
+UC_VERIFY .> UC_MARK_VERIFIED : include
+UC_MARK_VERIFIED .> UC_AUTO_LOGIN : include
+
+' Alternate / error flows
+UC_SERVER_VALIDATE .> UC_ERRORS : extend
+UC_VERIFY_SEND .> UC_RESEND : extend
+
+' Notes
+note right of UC_CLIENT_VALIDATE
+Client-side checks:
+- required fields
+- email format
+- basic password strength
+end note
+
+note right of UC_SERVER_VALIDATE
+Server-side checks (must):
+- unique email
+- strong password policy
+- sanitize input
+- store hashed password
+end note
+
+note right of UC_VERIFY_SEND
+Server generates a time-limited token and sends email with link:
+  /api/auth/verify?token=...
+If delivery fails, user can request resend (UC_RESEND).
+end note
+
+note left
+Social login / OAuth is not enabled in this project by default. Guests must register
+with an email/password. If you plan to enable social providers later, add a secure
+OAuth flow and update this diagram accordingly.
+end note
+
+note bottom of UC_AUTO_LOGIN
+After verification the system may auto-create a session (JWT cookie) and
+redirect user back to previous page or dashboard.
+end note
+
+' Preconditions / Postconditions summary
+note top
+Preconditions: Guest not logged in; form accessible.
+Postconditions (success): user record created; verified after email; session issued if auto-login.
+end note
+
+@enduml

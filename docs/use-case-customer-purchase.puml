@@ -1,0 +1,137 @@
+@startuml use-case-customer-purchase
+left to right direction
+skinparam usecase {
+  BackgroundColor #F9FFF7
+  ArrowColor #2b6a2b
+}
+
+actor Customer as "Customer (Authenticated)"
+actor System as "System"
+
+' Main use cases for shopping process
+usecase "Browse Products" as UC_BROWSE
+usecase "Search Products" as UC_SEARCH
+usecase "View Product Details" as UC_VIEW_DETAIL
+usecase "Compare Products" as UC_COMPARE
+usecase "View Similar Products" as UC_SIMILAR
+usecase "View Related Products" as UC_RELATED
+
+' Cart management use cases
+usecase "View Cart" as UC_VIEW_CART
+usecase "Add to Cart" as UC_ADD_CART
+usecase "Update Cart Item" as UC_UPDATE_CART
+usecase "Remove from Cart" as UC_REMOVE_CART
+
+' Checkout process use cases
+usecase "Start Checkout" as UC_START_CHECKOUT
+usecase "Select Shipping Address" as UC_SELECT_ADDRESS
+usecase "Add New Address" as UC_ADD_ADDRESS
+usecase "Select Payment Method" as UC_SELECT_PAYMENT
+usecase "Place Order" as UC_PLACE_ORDER
+
+' Order management use cases
+usecase "View Orders" as UC_VIEW_ORDERS
+usecase "View Order Details" as UC_ORDER_DETAIL
+usecase "Cancel Order" as UC_CANCEL_ORDER
+usecase "Confirm Delivery" as UC_CONFIRM_DELIVERY
+
+' API endpoints
+usecase "GET /api/products" as API_PRODUCTS
+usecase "GET /api/products/search" as API_SEARCH
+usecase "GET /api/products/[slug]" as API_DETAIL
+usecase "GET /api/products/compare" as API_COMPARE
+usecase "GET /api/products/similar" as API_SIMILAR
+usecase "GET /api/products/related" as API_RELATED
+usecase "GET /api/cart" as API_CART_GET
+usecase "POST /api/cart/items" as API_CART_ADD
+usecase "PUT /api/cart/items/[id]" as API_CART_UPDATE
+usecase "DELETE /api/cart/items/[id]" as API_CART_DELETE
+usecase "POST /api/checkout" as API_CHECKOUT
+usecase "GET /api/orders" as API_ORDERS
+usecase "GET /api/orders/[id]" as API_ORDER_DETAIL
+usecase "POST /api/orders/[id]/cancel" as API_CANCEL
+usecase "POST /api/orders/[id]/confirm-delivery" as API_CONFIRM
+
+' Main flows
+Customer --> UC_BROWSE
+Customer --> UC_SEARCH
+Customer --> UC_VIEW_DETAIL
+Customer --> UC_COMPARE
+Customer --> UC_VIEW_CART
+Customer --> UC_START_CHECKOUT
+Customer --> UC_VIEW_ORDERS
+
+' System interactions
+System --> API_PRODUCTS
+System --> API_SEARCH
+System --> API_DETAIL
+System --> API_COMPARE
+System --> API_SIMILAR
+System --> API_RELATED
+System --> API_CART_GET
+System --> API_CART_ADD
+System --> API_CART_UPDATE
+System --> API_CART_DELETE
+System --> API_CHECKOUT
+System --> API_ORDERS
+System --> API_ORDER_DETAIL
+System --> API_CANCEL
+System --> API_CONFIRM
+
+' Include relationships
+UC_BROWSE ..> API_PRODUCTS : include
+UC_SEARCH ..> API_SEARCH : include
+UC_VIEW_DETAIL ..> API_DETAIL : include
+UC_COMPARE ..> API_COMPARE : include
+UC_VIEW_CART ..> API_CART_GET : include
+UC_ADD_CART ..> API_CART_ADD : include
+UC_UPDATE_CART ..> API_CART_UPDATE : include
+UC_REMOVE_CART ..> API_CART_DELETE : include
+UC_START_CHECKOUT ..> API_CHECKOUT : include
+UC_VIEW_ORDERS ..> API_ORDERS : include
+UC_ORDER_DETAIL ..> API_ORDER_DETAIL : include
+UC_CANCEL_ORDER ..> API_CANCEL : include
+UC_CONFIRM_DELIVERY ..> API_CONFIRM : include
+
+' Extended flows
+UC_VIEW_DETAIL ..> UC_ADD_CART : extend
+UC_VIEW_DETAIL ..> UC_SIMILAR : extend
+UC_VIEW_DETAIL ..> UC_RELATED : extend
+
+UC_START_CHECKOUT ..> UC_SELECT_ADDRESS : include
+UC_SELECT_ADDRESS ..> UC_ADD_ADDRESS : extend
+UC_START_CHECKOUT ..> UC_SELECT_PAYMENT : include
+UC_START_CHECKOUT ..> UC_PLACE_ORDER : include
+
+UC_VIEW_ORDERS ..> UC_ORDER_DETAIL : extend
+UC_ORDER_DETAIL ..> UC_CANCEL_ORDER : extend
+UC_ORDER_DETAIL ..> UC_CONFIRM_DELIVERY : extend
+
+' Notes
+note right of UC_START_CHECKOUT
+Checkout process:
+1. Validate cart items
+2. Select/confirm shipping address
+3. Choose payment method
+4. Review order summary
+5. Place order
+end note
+
+note right of UC_ADD_CART
+Validates:
+- Product availability
+- Quantity limits
+- Price validity
+end note
+
+note right of UC_CANCEL_ORDER
+Conditions:
+- Order status is new
+- Not shipped yet
+- Within cancellation window
+end note
+
+note "All actions require customer authentication" as N1
+Customer .. N1
+
+@enduml
