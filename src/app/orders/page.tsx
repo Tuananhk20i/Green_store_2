@@ -23,6 +23,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -230,6 +232,17 @@ export default function OrdersPage() {
                               {cancellingOrderId === order.id ? 'Đang hủy...' : 'Hủy đơn hàng'}
                             </button>
                           )}
+                          {order.status === 'delivered' && (
+                            <button
+                              onClick={() => {
+                                setSelectedOrder(order)
+                                setShowReviewModal(true)
+                              }}
+                              className="px-4 py-2 bg-[#ee4d2d] text-white rounded-md font-bold hover:bg-[#d73211] transition"
+                            >
+                              Đánh giá ngay
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -238,6 +251,80 @@ export default function OrdersPage() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// review modal component used by OrdersPage
+function ReviewModal({ order, onClose, refreshOrders }: any) {
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!comment.trim()) return toast.error('Vui lòng nhập cảm nhận của bạn');
+    setLoading(true);
+    try {
+      // Gửi đánh giá cho từng sản phẩm trong đơn hàng
+      for (const item of order.items) {
+        await fetch('/api/products/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: item.product.id,
+            rating,
+            comment,
+            images: [] // Có thể nâng cấp thêm phần dán link ảnh ở đây
+          })
+        });
+      }
+      toast.success('Đánh giá thành công!');
+      onClose();
+      refreshOrders();
+    } catch (error) {
+      toast.error('Lỗi khi gửi đánh giá');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg w-full max-w-lg p-6 shadow-xl">
+        <h3 className="text-lg font-bold mb-4 uppercase text-center">Đánh giá sản phẩm</h3>
+        
+        {/* Chọn Sao */}
+        <div className="flex justify-center gap-3 mb-6">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <button key={s} onClick={() => setRating(s)} className="focus:outline-none">
+              <svg 
+                className={`w-10 h-10 ${rating >= s ? 'text-yellow-400' : 'text-gray-300'}`} 
+                fill="currentColor" viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          className="w-full border rounded-lg p-4 h-32 text-sm outline-none focus:border-green-500"
+          placeholder="Sản phẩm tuyệt vời, đóng gói cẩn thận..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 py-2 text-gray-500 font-medium">Để sau</button>
+          <button 
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex-1 py-2 bg-green-600 text-white rounded-md font-bold hover:bg-green-700 disabled:bg-gray-400"
+          >
+            {loading ? 'Đang gửi...' : 'Hoàn thành'}
+          </button>
         </div>
       </div>
     </div>

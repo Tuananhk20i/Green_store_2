@@ -38,6 +38,8 @@ export default function ProductDetailPage() {
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
   const [activeImage, setActiveImage] = useState<string | null>(null)
+  const [reviews, setReviews] = useState<any[]>([])
+  const [reviewStats, setReviewStats] = useState({ avg: 0, total: 0 })
 
   // Hàm tạo QR truy xuất nguồn gốc
   const generateQR = async (currentProduct: Product) => {
@@ -75,6 +77,32 @@ export default function ProductDetailPage() {
   // Cập nhật ảnh lớn khi sản phẩm tải xong
   useEffect(() => {
     if (product) setActiveImage(product.imageUrl)
+  }, [product])
+
+  // fetch reviews with stats helper
+  const fetchReviews = async (productId: number) => {
+    try {
+      const res = await fetch(`/api/products/reviews?productId=${productId}`)
+      const result = await res.json()
+      if (result.success) {
+        setReviews(result.data)
+        if (result.data.length > 0) {
+          const sum = result.data.reduce((acc: number, r: any) => acc + r.rating, 0)
+          setReviewStats({
+            avg: parseFloat((sum / result.data.length).toFixed(1)),
+            total: result.data.length
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Lỗi load đánh giá:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (product) {
+      fetchReviews(product.id)
+    }
   }, [product])
 
   const fetchProduct = async () => {
@@ -226,6 +254,67 @@ export default function ProductDetailPage() {
             >
               {product.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
             </button>
+          </div>
+
+          <div className="mt-16 bg-white p-8 rounded-xl shadow-sm border">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8 uppercase border-b pb-4">
+              Đánh giá sản phẩm ({reviewStats.total})
+            </h2>
+
+            {/* Tóm tắt đánh giá */}
+            <div className="bg-[#fffbf8] border border-[#f9ede5] p-6 rounded-sm flex items-center gap-10 mb-10">
+              <div className="text-center">
+                <div className="text-[#ee4d2d] text-4xl font-bold">{reviewStats.avg || 0} <span className="text-lg text-gray-500">trên 5</span></div>
+                <div className="flex text-[#ee4d2d] justify-center mt-2">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className={`w-5 h-5 fill-current ${i < Math.floor(reviewStats.avg) ? 'text-yellow-400' : 'text-gray-300'}`} viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {['Tất cả', '5 Sao', '4 Sao', '3 Sao', '2 Sao', '1 Sao'].map(label => (
+                  <button key={label} className="px-5 py-1.5 border rounded-sm bg-white text-sm hover:border-[#ee4d2d] hover:text-[#ee4d2d]">
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Danh sách bình luận */}
+            <div className="space-y-8">
+              {reviews.length > 0 ? reviews.map((rev) => (
+                <div key={rev.id} className="flex gap-4 border-b pb-8 last:border-0">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-gray-400">
+                    {rev.user_name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-gray-800">{rev.user_name}</p>
+                    <div className="flex text-yellow-400 my-1">
+                      {[...Array(rev.rating)].map((_, i) => (
+                        <svg key={i} className="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                      ))}
+                    </div>
+                    <div className="text-[10px] text-gray-400 mb-3">
+                      {new Date(rev.created_at).toLocaleString('vi-VN')}
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed">{rev.comment}</p>
+                    
+                    {/* Hiển thị ảnh đánh giá nếu có */}
+                    {rev.images && rev.images.length > 0 && (
+                      <div className="flex gap-2 mt-4">
+                        {rev.images.map((img: string, i: number) => (
+                          <img key={i} src={img} className="w-20 h-20 object-cover rounded border" alt="Feedback" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )) : (
+                <div className="text-center py-10 text-gray-400 italic">Sản phẩm chưa có đánh giá nào.</div>
+              )}
+            </div>
           </div>
         </div>
       </div>

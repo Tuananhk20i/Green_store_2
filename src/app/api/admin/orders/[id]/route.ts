@@ -4,154 +4,102 @@ import { getUserFromToken } from '@/lib/auth-utils'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = getUserFromToken(request)
     
     if (!user) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Authentication required' 
-        },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, error: 'Yêu cầu đăng nhập' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const isAdmin = user.role === 'admin'
-    
-    if (!isAdmin) {
-      // Double check in database
-      const dbUser = await sql`
-        SELECT is_admin FROM users WHERE id = ${user.userId}
-      `
-      
-      if (dbUser.length === 0 || !dbUser[0].is_admin) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Admin access required' 
-          },
-          { status: 403 }
-        )
-      }
-    }
-
-    const { id } = params
+    const { id } = await params
     const orderId = parseInt(id)
     
     const body = await request.json()
-    const { action } = body // action can be 'cancel', 'ship', 'deliver', etc.
+    const { action } = body 
 
-    if (action === 'cancel') {
-      // Update order status to cancelled
-      await sql`
-        UPDATE orders 
-        SET status = 'cancelled',
-            cancelled_at = NOW(),
-            updated_at = NOW(),
-            updated_by = ${user.userId}
-        WHERE id = ${orderId}
-      `
-    } else {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid action' 
-        },
-        { status: 400 }
-      )
+    // Kiểm tra quyền Admin dựa trên cột 'role'
+    const dbUser = await sql`SELECT role FROM users WHERE id = ${user.userId}`
+    if (dbUser.length === 0 || dbUser[0].role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Yêu cầu quyền Admin' }, { status: 403 })
     }
 
-    return NextResponse.json({
-      success: true
-    })
-  } catch (error) {
+    /**
+     * SỬA GIÁ TRỊ TẠI ĐÂY ĐỂ KHỚP VỚI ENUM TRONG DATABASE
+     * Thay 'confirmed' bằng 'paid' vì Database báo lỗi không nhận 'confirmed'
+     */
+    let newStatus: string = ''
+    switch (action) {
+      case 'confirm': 
+      case 'pay': 
+        newStatus = 'paid'; // Sử dụng 'paid' thay vì 'confirmed'
+        break;
+      case 'ship':    
+        newStatus = 'shipped'; 
+        break;
+      case 'deliver': 
+        newStatus = 'delivered'; 
+        break;
+      case 'cancel':  
+        newStatus = 'cancelled'; 
+        break;
+      default:
+        return NextResponse.json({ success: false, error: `Hành động không hợp lệ: ${action}` }, { status: 400 })
+    }
+
+    // Thực hiện cập nhật Database
+    // Sử dụng ép kiểu (::order_status) nếu cần thiết, nhưng Neon sql thường tự xử lý chuỗi
+    await sql`
+      UPDATE orders 
+      SET 
+        status = ${newStatus},
+        payment_status = CASE WHEN ${action} = 'pay' THEN 'PAID' ELSE payment_status END,
+        paid_at = CASE WHEN ${action} = 'pay' THEN NOW() ELSE paid_at END,
+        shipped_at = CASE WHEN ${action} = 'ship' THEN NOW() ELSE shipped_at END,
+        delivered_at = CASE WHEN ${action} = 'deliver' THEN NOW() ELSE delivered_at END,
+        cancelled_at = CASE WHEN ${action} = 'cancel' THEN NOW() ELSE cancelled_at END,
+        updated_at = NOW(),
+        updated_by = ${user.userId}
+      WHERE id = ${orderId}
+    `
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
     console.error('Error updating order:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to update order' 
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message || 'Lỗi khi cập nhật đơn hàng' 
+    }, { status: 500 })
   }
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = getUserFromToken(request)
-    
-    if (!user) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Authentication required' 
-        },
-        { status: 401 }
-      )
-    }
-
-    // Check if user is admin
-    const isAdmin = user.role === 'admin'
-    
-    if (!isAdmin) {
-      // Double check in database
-      const dbUser = await sql`
-        SELECT is_admin FROM users WHERE id = ${user.userId}
-      `
-      
-      if (dbUser.length === 0 || !dbUser[0].is_admin) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Admin access required' 
-          },
-          { status: 403 }
-        )
-      }
-    }
-
-    const { id } = params
+    const { id } = await params
     const orderId = parseInt(id)
 
-    // Get order with details
     const orders = await sql`
       SELECT 
-        o.*,
-        u.name as user_name,
-        u.email as user_email
+        o.*, 
+        u.full_name as user_name, 
+        u.email as user_email,
+        ua.address_line1, ua.city, ua.phone_number
       FROM orders o
       JOIN users u ON o.user_id = u.id
+      LEFT JOIN user_addresses ua ON o.shipping_address_id = ua.id
       WHERE o.id = ${orderId}
     `
 
     if (orders.length === 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Order not found' 
-        },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: false, error: 'Không tìm thấy đơn hàng' }, { status: 404 })
     }
 
-    const order = orders[0]
-
-    // Get order items
     const items = await sql`
-      SELECT 
-        oi.id,
-        oi.qty,
-        oi.unit_price,
-        oi.total,
-        p.id as product_id,
-        p.name as product_name
+      SELECT oi.*, p.name as product_name, p.image_url
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       WHERE oi.order_id = ${orderId}
@@ -159,45 +107,10 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: {
-        id: order.id,
-        status: order.status,
-        subtotal: order.subtotal,
-        shipping_fee: order.shipping_fee,
-        total: order.total,
-        placed_at: order.placed_at,
-        paid_at: order.paid_at,
-        shipped_at: order.shipped_at,
-        delivered_at: order.delivered_at,
-        cancelled_at: order.cancelled_at,
-        payment_proof_url: order.payment_proof_url,
-        shipping_provider: order.shipping_provider,
-        tracking_number: order.tracking_number,
-        user: {
-          id: order.user_id,
-          name: order.user_name,
-          email: order.user_email
-        },
-        items: items.map(item => ({
-          id: item.id,
-          qty: item.qty,
-          unit_price: item.unit_price,
-          total: item.total,
-          product: {
-            id: item.product_id,
-            name: item.product_name
-          }
-        }))
-      }
+      data: { ...orders[0], items }
     })
   } catch (error) {
-    console.error('Error fetching order:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch order' 
-      },
-      { status: 500 }
-    )
+    console.error('Error fetching order detail:', error)
+    return NextResponse.json({ success: false, error: 'Lỗi server nội bộ' }, { status: 500 })
   }
 }
