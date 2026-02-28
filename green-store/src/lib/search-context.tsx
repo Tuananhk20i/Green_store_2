@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface SearchContextType {
   searchQuery: string

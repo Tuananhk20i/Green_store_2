@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams } from "next/navigation"
 import { useSearch } from '@/lib/search-context'
 import ProductCard from '@/components/ProductCard'
 
@@ -31,6 +31,8 @@ interface Category {
     products: number
   }
 }
+
+
 
 export default function ProductsPage() {
   const searchParams = useSearchParams()

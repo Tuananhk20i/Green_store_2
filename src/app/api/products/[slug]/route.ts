@@ -8,7 +8,8 @@ export async function GET(
   try {
     const { slug } = await params
     const products = await sql`
-      SELECT p.*, c.name as category_name, c.slug as category_slug
+      SELECT p.*, c.name as category_name, c.slug as category_slug,
+        (SELECT json_agg(pi.image_url) FROM product_images pi WHERE pi.product_id = p.id) as gallery
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.slug = ${slug}
@@ -38,6 +39,7 @@ export async function GET(
       isSale: product.is_sale || false,
       stock: product.stock || 0,
       imageUrl: product.image_url,
+      gallery: product.gallery || [],
       category: {
         id: product.category_id,
         name: product.category_name,

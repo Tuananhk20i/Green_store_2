@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, categoryId, imageUrl, stock, brand, salePrice } = body
+    const { name, description, price, categoryId, imageUrl, stock, brand, salePrice, gallery } = body
 
     // Generate slug from name
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -119,6 +119,20 @@ export async function POST(request: NextRequest) {
       VALUES (${name}, ${slug}, ${description}, ${price}, ${categoryIdNum}, ${imageUrl}, ${stock}, ${brand}, ${salePrice}, true, NOW())
       RETURNING *
     `
+
+    const productId = result[0].id
+
+    // store gallery images if provided
+    if (gallery && Array.isArray(gallery) && gallery.length > 0) {
+      for (const url of gallery) {
+        if (typeof url === 'string' && url.trim() !== '') {
+          await sql`
+            INSERT INTO product_images (product_id, image_url)
+            VALUES (${productId}, ${url.trim()})
+          `
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -170,7 +184,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, description, price, categoryId, imageUrl, stock, brand, salePrice } = body
+    const { id, name, description, price, categoryId, imageUrl, stock, brand, salePrice, gallery } = body
 
     // Generate slug from name
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -204,6 +218,27 @@ export async function PUT(request: NextRequest) {
         },
         { status: 404 }
       )
+    }
+
+    const productId = result[0].id
+
+    // replace gallery images
+    if (gallery) {
+      // clear old
+      await sql`
+        DELETE FROM product_images WHERE product_id = ${productId}
+      `
+
+      if (Array.isArray(gallery) && gallery.length > 0) {
+        for (const url of gallery) {
+          if (typeof url === 'string' && url.trim() !== '') {
+            await sql`
+              INSERT INTO product_images (product_id, image_url)
+              VALUES (${productId}, ${url.trim()})
+            `
+          }
+        }
+      }
     }
 
     return NextResponse.json({
