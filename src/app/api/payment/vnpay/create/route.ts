@@ -1,24 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'; // Thay đổi Request thành NextRequest
 import { createPaymentUrl } from '@/lib/vnpay';
-import { getServerSession } from 'next-auth';
 import { sql } from '@/lib/db';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getUserIdFromToken } from '@/lib/auth-utils'; // Import helper lấy ID từ token
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) { // Sử dụng NextRequest
   try {
-    // Get session from request
-    const session = await getServerSession(authOptions);
-    console.log('Session in VNPay create:', session);
+    // Thay thế getServerSession bằng getUserIdFromToken để đồng bộ với Checkout
+    const userId = getUserIdFromToken(request);
+    console.log('User ID in VNPay create:', userId);
     
-    if (!session?.user?.id) {
-      console.error('No session or user ID found:', session);
+    if (!userId) {
+      console.error('No user ID found from token');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Verify order belongs to user
-    const userId = session.user.id;
 
     const body = await request.json();
     const { orderId, amount, orderInfo } = body;
@@ -35,7 +31,6 @@ export async function POST(request: Request) {
         orderId: orderId.toString(),
       });
 
-      // Verify payment URL was created successfully
       if (!paymentUrl || !paymentUrl.startsWith('https://')) {
         console.error('Invalid payment URL generated:', paymentUrl);
         return NextResponse.json(
@@ -44,7 +39,7 @@ export async function POST(request: Request) {
         );
       }
 
-      // Verify order belongs to user and update payment method
+      // Verify order belongs to user
       const orders = await sql`
         SELECT id FROM orders 
         WHERE id = ${orderId} AND user_id = ${userId}
@@ -66,7 +61,6 @@ export async function POST(request: Request) {
         WHERE id = ${orderId} AND user_id = ${userId}
       `;
 
-      // Log successful payment URL creation
       console.log('Generated VNPay payment URL for order:', orderId);
       return NextResponse.json({ paymentUrl });
     } catch (err) {
