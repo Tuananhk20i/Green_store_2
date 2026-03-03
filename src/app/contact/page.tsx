@@ -42,7 +42,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white p-8 rounded shadow">
-                <h2 className="text-xl font-bold mb-4">LIÊN HỆ VỚI CHÚNG TÔI</h2>
+                <h2 className="text-xl text-gray-600 font-bold mb-4">LIÊN HỆ VỚI CHÚNG TÔI</h2>
                 <p className="text-sm text-gray-600 mb-6">Bạn có câu hỏi? Gửi cho chúng tôi thông tin và chúng tôi sẽ liên hệ lại sớm nhất có thể.</p>
 
                 <ContactForm />
@@ -51,7 +51,7 @@ export default function ContactPage() {
 
             <aside>
               <div className="bg-white p-6 rounded shadow">
-                <h3 className="font-semibold mb-3">LIÊN HỆ</h3>
+                <h3 className="font-semibold  text-gray-700 mb-3">LIÊN HỆ</h3>
                 <ul className="text-sm space-y-3 text-gray-700">
                   <li>
                     <div className="font-semibold">Địa chỉ</div>
@@ -68,7 +68,7 @@ export default function ContactPage() {
                 </ul>
 
                 <div className="mt-6">
-                  <h4 className="font-semibold">GIỜ LÀM VIỆC</h4>
+                  <h4 className="font-semibold  text-gray-700 ">GIỜ LÀM VIỆC</h4>
                   <div className="text-sm text-gray-600 mt-2">
                     Thứ Hai - Thứ Sáu: 09.00am đến 07.00pm<br />
                     Thứ Bảy: 10.00am đến 05.00pm<br />
@@ -82,18 +82,19 @@ export default function ContactPage() {
       </section>
 
       {/* Map */}
-      <section className="">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="rounded overflow-hidden shadow">
-            {/* Using Google Maps embed iframe - no API key required for embed URLs */}
-            <iframe
-              title="company-location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193571.43848350414!2d-74.11808661929162!3d40.70582532031509!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c250b3d3e26b1b%3A0x631b6f0a7c8f6b2b!2sNew%20York%2C%20USA!5e0!3m2!1sen!2s!4v1600000000000!5m2!1sen!2s"
-              className="w-full h-72 md:h-96 border-0"
-              loading="lazy"
-            />
-          </div>
-        </div>
+      <section>
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="rounded-xl overflow-hidden shadow-lg border">
+      <iframe
+        title="company-location-thai-nguyen"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d107441.6517789967!2d105.72108749490015!3d21.577516976295705!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313526e41a2f48ff%3A0x9af085049fb0466f!2zVHAuIFRow6FpIE5ndXnDqm4sIFRow6FpIE5ndXnDqm4sIFZp4buHdCBOYW0!5e1!3m2!1svi!2s!4v1772523494732!5m2!1svi!2s"
+        className="w-full h-72 md:h-96 lg:h-[500px] border-0"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
+      />
+      </div>
+      </div>
       </section>
     </main>
   )

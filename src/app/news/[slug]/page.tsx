@@ -11,8 +11,8 @@ export default function NewsDetail({ params }: Props) {
     return (
       <main className="min-h-screen">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <h2 className="text-2xl font-bold">Bài viết không tìm thấy</h2>
-          <p className="mt-4">Bài viết bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+          <h2 className="text-2xl text-gray-500 font-bold">Bài viết không tìm thấy</h2>
+          <p className="text-gray-500 mt-4">Bài viết bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
           <div className="mt-6">
             <Link href="/news" className="text-lime-600">Quay lại danh sách tin</Link>
           </div>

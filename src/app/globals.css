@@ -161,8 +161,11 @@ body {
 }
 
 /* Smooth transitions for all interactive elements */
-* {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+* * {
+  transition: background-color 0.3s,
+              border-color 0.3s,
+              box-shadow 0.3s,
+              transform 0.3s;
 }
 
 /* Enhanced button styles */
@@ -300,4 +303,19 @@ nextjs-portal,
   display: none !important;
   pointer-events: none !important;
   visibility: hidden !important;
+}
+
+/* ===== Fix input text bị mờ ===== */
+input,
+textarea,
+select {
+  color: #1f2937 !important; /* text-gray-800 */
+  background-color: #ffffff;
+  opacity: 1 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af; /* text-gray-400 */
+  opacity: 1;
 }

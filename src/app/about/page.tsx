@@ -58,7 +58,7 @@ export default function About() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold mb-2">GIỚI THIỆU VỀ CHÚNG TÔI</h2>
+              <h2 className="text-2xl font-bold  text-gray-500 mb-2">GIỚI THIỆU VỀ CHÚNG TÔI</h2>
               <div className="mb-4 text-sm text-lime-600 uppercase tracking-widest">Giới thiệu công ty</div>
               <p className="italic text-gray-600 mb-4">Thực phẩm của chúng ta nên là thuốc của chúng ta. Thuốc hữu cơ của chúng ta nên là thực phẩm của chúng ta cho sức khỏe của bạn.</p>
               <p className="text-gray-700 mb-6">Chúng tôi bắt đầu Green Store để kết nối các trang trại có trách nhiệm và người tiêu dùng có ý thức. Từ việc lựa chọn trang trại đến đóng gói và giao hàng, kiểm soát chất lượng và khả năng truy xuất nguồn gốc là ưu tiên hàng đầu của chúng tôi. Chúng tôi hỗ trợ nông nghiệp bền vững và các phương pháp thương mại công bằng.</p>
@@ -114,25 +114,35 @@ export default function About() {
       {/* DELIVERY PROCESS */}
       <section className="py-12">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">QUY TRÌNH GIAO HÀNG</h2>
+          <h2 className="text-2xl font-bold  text-gray-500 mb-4">QUY TRÌNH GIAO HÀNG</h2>
           <p className="text-sm text-lime-600 mb-8">Các bước đơn giản để nhận đơn hàng của bạn</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-6">
-            {[
-              ['QUY TRÌNH ĐƠN HÀNG','Đơn hàng được ghi nhận bởi kho APL.'],
-              ['ĐÓNG GÓI','Đóng gói cẩn thận để giữ sản phẩm luôn tươi ngon.'],
-              ['GIAO HÀNG','Giao hàng nhanh chóng và đáng tin cậy đến tay bạn.'],
-              ['BÁO CÁO','Theo dõi đơn hàng và hỗ trợ sau bán hàng.'],
-            ].map(([title, desc], idx) => (
-              <div key={idx} className="p-6">
-                <div className="w-20 h-20 mx-auto rounded-full bg-lime-100 flex items-center justify-center mb-4">
-                  <div className="text-lime-600 font-bold">{idx+1}</div>
-                </div>
-                <h4 className="font-semibold">{title}</h4>
-                <p className="text-sm text-gray-600 mt-2">{desc}</p>
-              </div>
-            ))}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 mb-6 text-center">
+  {[
+    ['QUY TRÌNH ĐƠN HÀNG','Đơn hàng được ghi nhận bởi kho APL.'],
+    ['ĐÓNG GÓI','Đóng gói cẩn thận để giữ sản phẩm luôn tươi ngon.'],
+    ['GIAO HÀNG','Giao hàng nhanh chóng và đáng tin cậy đến tay bạn.'],
+    ['BÁO CÁO','Theo dõi đơn hàng và hỗ trợ sau bán hàng.'],
+  ].map(([title, desc], idx) => (
+    <div key={idx} className="p-6">
+      
+      <div className="w-20 h-20 mx-auto rounded-full bg-lime-100 flex items-center justify-center mb-4">
+        <div className="text-lime-600 font-bold text-lg">
+          {idx + 1}
+        </div>
+      </div>
+
+      <h4 className="font-bold text-gray-900 text-lg mb-2">
+        {title}
+      </h4>
+
+      <p className="text-sm text-gray-600">
+        {desc}
+      </p>
+
+    </div>
+  ))}
+</div>
 
           <Link href="/products" className="inline-block bg-lime-600 text-white px-6 py-2 rounded">KHÁM PHÁ SẢN PHẨM</Link>
         </div>
