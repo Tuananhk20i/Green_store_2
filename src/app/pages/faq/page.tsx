@@ -1,97 +1,193 @@
-import Link from 'next/link'
+import Link from "next/link"
+import Image from "next/image"
 
 export const metadata = {
-  title: 'Câu hỏi Thường gặp - Green Store',
-  description: 'Câu hỏi thường gặp về mua hàng, vận chuyển, hoàn trả và chính sách tại Green Store',
+  title: "Câu hỏi Thường gặp - Green Store",
+  description:
+    "Giải đáp các câu hỏi phổ biến về đặt hàng, giao hàng, thanh toán, đổi trả và chính sách tại Green Store.",
 }
 
-const faqs = [
+const faqCategories = [
   {
-    q: 'Làm thế nào để đặt hàng trên website?',
-    a: 'Bạn có thể chọn sản phẩm, thêm vào giỏ hàng và làm theo hướng dẫn tại trang thanh toán để hoàn tất đặt hàng. Hỗ trợ thanh toán khi nhận hàng (COD) và chuyển khoản ngân hàng.'
+    title: "🛒 Đặt hàng & Thanh toán",
+    image:
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=60",
+    faqs: [
+      {
+        q: "Làm thế nào để đặt hàng trên website?",
+        a: "Chọn sản phẩm → Thêm vào giỏ hàng → Nhập địa chỉ → Chọn phương thức thanh toán → Xác nhận đơn hàng."
+      },
+      {
+        q: "Tôi có cần tạo tài khoản để mua hàng không?",
+        a: "Không bắt buộc. Tuy nhiên, tạo tài khoản giúp theo dõi đơn hàng và nhận ưu đãi tốt hơn."
+      },
+      {
+        q: "Green Store hỗ trợ những phương thức thanh toán nào?",
+        a: "COD, chuyển khoản ngân hàng, ví điện tử và thanh toán online qua cổng bảo mật."
+      },
+      {
+        q: "Thanh toán online có an toàn không?",
+        a: "Chúng tôi sử dụng hệ thống mã hóa SSL và cổng thanh toán đạt chuẩn bảo mật quốc tế."
+      },
+      {
+        q: "Tôi có thể hủy đơn hàng sau khi đặt không?",
+        a: "Bạn có thể hủy trước khi đơn hàng được bàn giao cho đơn vị vận chuyển."
+      }
+    ]
   },
   {
-    q: 'Thời gian giao hàng mất bao lâu?',
-    a: 'Thời gian giao hàng thông thường là 2-5 ngày làm việc trong nội thành. Với tỉnh/thành khác có thể lâu hơn. Thời gian cụ thể hiển thị khi chọn địa chỉ giao hàng.'
+    title: "🚚 Giao hàng & Theo dõi đơn",
+    image:
+      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=60",
+    faqs: [
+      {
+        q: "Thời gian giao hàng mất bao lâu?",
+        a: "Nội thành: 1–3 ngày. Tỉnh khác: 2–5 ngày tùy khu vực."
+      },
+      {
+        q: "Tôi có thể theo dõi đơn hàng ở đâu?",
+        a: "Đăng nhập → Vào mục Đơn hàng → Xem trạng thái hoặc dùng mã tracking gửi qua email."
+      },
+      {
+        q: "Có giao hàng trong ngày không?",
+        a: "Một số khu vực nội thành có hỗ trợ giao nhanh 4–6 giờ."
+      },
+      {
+        q: "Nếu tôi không nhận được hàng thì sao?",
+        a: "Vui lòng liên hệ CSKH trong vòng 24h để được hỗ trợ kiểm tra."
+      }
+    ]
   },
   {
-    q: 'Chính sách đổi trả như thế nào?',
-    a: 'Sản phẩm hư hỏng do vận chuyển hoặc lỗi nhà cung cấp có thể đổi/trả trong vòng 7 ngày kể từ ngày nhận hàng. Vui lòng liên hệ bộ phận chăm sóc khách hàng để được hướng dẫn.'
+    title: "🔄 Đổi trả & Hoàn tiền",
+    image:
+      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=60",
+    faqs: [
+      {
+        q: "Chính sách đổi trả như thế nào?",
+        a: "Đổi trả trong 7 ngày nếu sản phẩm lỗi hoặc hư hỏng do vận chuyển."
+      },
+      {
+        q: "Thời gian hoàn tiền mất bao lâu?",
+        a: "Từ 3–7 ngày làm việc tùy phương thức thanh toán."
+      },
+      {
+        q: "Tôi cần cung cấp gì khi đổi trả?",
+        a: "Mã đơn hàng và hình ảnh sản phẩm lỗi."
+      }
+    ]
   },
   {
-    q: 'Tôi có thể yêu cầu hóa đơn VAT không?',
-    a: 'Vâng — chọn yêu cầu hóa đơn khi thanh toán hoặc liên hệ với chúng tôi sau khi đặt hàng để cung cấp thông tin xuất hóa đơn.'
-  },
-  {
-    q: 'Sản phẩm có bảo quản lạnh không?',
-    a: 'Một số sản phẩm yêu cầu bảo quản lạnh. Thông tin bảo quản được ghi rõ trên trang chi tiết sản phẩm.'
-  },
-  {
-    q: 'Làm sao để theo dõi đơn hàng của tôi?',
-    a: 'Bạn sẽ nhận được mã theo dõi qua email/SMS khi đơn hàng được chuyển cho đơn vị vận chuyển. Ngoài ra, đăng nhập vào tài khoản và vào trang Đơn hàng để xem trạng thái.'
-  },
-  {
-    q: 'Có chương trình khuyến mãi cho khách hàng mới không?',
-    a: 'Chúng tôi thường có chương trình khuyến mãi cho khách hàng mới và khách hàng đăng ký newsletter. Theo dõi trang Khuyến mãi hoặc đăng ký nhận tin để cập nhật.'
-  },
-  {
-    q: 'Làm thế nào để liên hệ bộ phận hỗ trợ?',
-    a: 'Bạn có thể sử dụng trang Liên hệ để gửi tin nhắn, gọi số hotline hoặc chat trực tiếp nếu có.'
+    title: "🥬 Sản phẩm & Bảo quản",
+    image:
+      "https://images.unsplash.com/photo-1474440692490-2e83ae13ba29?auto=format&fit=crop&w=1200&q=60",
+    faqs: [
+      {
+        q: "Sản phẩm có nguồn gốc rõ ràng không?",
+        a: "Tất cả sản phẩm đều có thông tin nhà cung cấp và tiêu chuẩn kiểm định."
+      },
+      {
+        q: "Rau củ nên bảo quản như thế nào?",
+        a: "Giữ ở ngăn mát 4–8°C và dùng trong 3–5 ngày."
+      },
+      {
+        q: "Sản phẩm có chứng nhận hữu cơ không?",
+        a: "Một số sản phẩm có chứng nhận VietGAP, GlobalGAP hoặc hữu cơ."
+      }
+    ]
   }
 ]
 
 export default function FAQPage() {
   return (
-    <main className="min-h-screen">
-      {/* Hero */}
+    <main className="min-h-screen bg-gray-50">
+
+      {/* HERO */}
       <section className="relative">
         <div
-          className="h-56 sm:h-72 lg:h-96 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1400&q=60')" }}
+          className="h-64 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1400&q=60')",
+          }}
         >
-          <div className="absolute inset-0 bg-black/60 pointer-events-none" />
-          <div className="relative z-10 flex items-center justify-center h-full">
-            <div className="text-center text-white px-4">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold">CÂU HỎI THƯỜNG GẶP</h1>
-              <p className="mt-2 text-sm sm:text-base opacity-90">Những câu hỏi phổ biến về đặt hàng, giao nhận và chính sách</p>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative flex items-center justify-center h-full text-white text-center">
+            <div>
+              <h1 className="text-4xl font-extrabold">CÂU HỎI THƯỜNG GẶP</h1>
+              <p className="mt-3 opacity-90">
+                Giải đáp nhanh các thắc mắc phổ biến khi mua hàng tại Green Store
+              </p>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white relative z-10">
-          <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-gray-600 flex items-center justify-between">
-            <nav className="flex items-center gap-2">
-              <Link href="/" className="hover:text-lime-600">TRANG CHỦ</Link>
-              <span className="text-gray-300">&gt;</span>
-              <Link href="/pages" className="hover:text-lime-600">PAGES</Link>
-              <span className="text-gray-300">&gt;</span>
-              <span className="text-lime-600 font-semibold">CÂU HỎI THƯỜNG GẶP</span>
-            </nav>
-            <div className="text-sm text-gray-500">Có {faqs.length} mục hỏi đáp</div>
           </div>
         </div>
       </section>
 
-      {/* FAQ list */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-white p-8 rounded shadow">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {faqs.map((f, i) => (
-                <details key={i} className="group border border-gray-100 rounded-lg p-4" open={i < 2}>
-                  <summary className="cursor-pointer list-none font-semibold flex items-center justify-between">
-                    <span className="text-gray-800">{f.q}</span>
-                    <span className="ml-3 text-gray-400 group-open:rotate-45 transition-transform">+</span>
-                  </summary>
-                  <div className="mt-3 text-gray-600">
-                    {f.a}
-                  </div>
-                </details>
-              ))}
+      {/* FAQ CONTENT */}
+      <section className="py-16">
+        <div className="max-w-6xl mx-auto px-4 space-y-16">
+
+          {faqCategories.map((category, index) => (
+            <div key={index} className="bg-white rounded-2xl shadow p-8">
+
+              {/* CATEGORY HEADER */}
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-24 h-24 relative rounded-xl overflow-hidden">
+                  <Image
+                    src={category.image}
+                    alt={category.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {category.title}
+                </h2>
+              </div>
+
+              {/* QUESTIONS */}
+              <div className="space-y-4">
+                {category.faqs.map((faq, i) => (
+                  <details
+                    key={i}
+                    className="group border border-gray-200 rounded-xl p-5 transition-all duration-300 hover:shadow-md"
+                  >
+                    <summary className="flex justify-between items-center cursor-pointer font-semibold text-gray-800">
+                      {faq.q}
+                      <span className="transition-transform duration-300 group-open:rotate-45 text-lime-600 text-xl">
+                        +
+                      </span>
+                    </summary>
+
+                    <div className="mt-4 text-gray-600 leading-relaxed animate-fadeIn">
+                      {faq.a}
+                    </div>
+                  </details>
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
     </main>
   )
 }
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqCategories.flatMap(category =>
+        category.faqs.map(faq => ({
+          "@type": "Question",
+          name: faq.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.a
+          }
+        }))
+      )
+    })
+  }}
+/>
