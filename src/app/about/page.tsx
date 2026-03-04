@@ -88,7 +88,7 @@ export default function AboutPage() {
       {/* ================= THE STORY SECTION (MỤC BẠN VỪA LÀM) ================= */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">
         <Image
-          src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80"
+          src="https://images.unsplash.com/photo-1762773302175-7583d34b79ab?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Green Store Farm"
           fill
           className="object-cover"
@@ -98,7 +98,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-6xl px-6 text-white w-full">
           <div className="max-w-3xl space-y-6">
             <span className="inline-block px-4 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-emerald-300 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase">
-              Hành trình chất lượng
+              Hành trình tận tâm
             </span>
             <h2 className="text-5xl md:text-7xl font-black leading-tight tracking-tight">
               Gói Ghém Chất lượng <br />
