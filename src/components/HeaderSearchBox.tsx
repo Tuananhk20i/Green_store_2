@@ -125,7 +125,7 @@ export default function HeaderSearchBox() {
           <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowSearch(false)}></div>
           
           {/* Search Box */}
-          <div className="lg:absolute lg:right-0 lg:top-full lg:mt-2 lg:w-96 fixed lg:relative inset-x-0 top-20 lg:top-auto mx-4 lg:mx-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200">
+          <div className="lg:absolute lg:right-0 lg:top-full lg:mt-2 lg:w-96 fixed inset-x-0 top-20 mx-4 lg:mx-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200">
             <form onSubmit={handleSearch} className="p-4">
               <div className="relative">
                 <input

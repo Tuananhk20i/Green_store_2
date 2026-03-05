@@ -53,6 +53,18 @@ const galleryItems: GalleryItem[] = [
     image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
     title: 'Đặc sản vùng miền',
     price: 220000
+  },
+  {
+    id: 6,
+    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
+    title: 'Đặc sản vùng miền',
+    price: 220000
+  },
+  {
+    id: 6,
+    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
+    title: 'Đặc sản vùng miền',
+    price: 220000
   }
 ]
 
