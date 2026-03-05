@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import { writeFile } from 'fs/promises'
+import path from 'path'
 
 export async function GET(request: Request) {
   try {
@@ -23,7 +25,7 @@ export async function GET(request: Request) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any
       
       const user = await sql`
-        SELECT id, email, name, role, created_at FROM users WHERE id = ${decoded.userId}
+        SELECT id, email, name, role, avatar, created_at FROM users WHERE id = ${decoded.userId}
       `
 
       if (!user) {
@@ -76,14 +78,15 @@ export async function PUT(request: Request) {
     }
 
     const token = authHeader.substring(7)
-    const { name, email, currentPassword, newPassword } = await request.json()
+    const formData = await request.formData()
+    
+    const name = formData.get('name') as string
+    const avatar = formData.get('avatar') as File | null
+    const currentPassword = formData.get('currentPassword') as string | null
+    const newPassword = formData.get('newPassword') as string | null
     
     try {
-      console.log('Token received:', token.substring(0, 20) + '...')
-      console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET)
-      
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any
-      console.log('Token decoded successfully:', { userId: decoded.userId, email: decoded.email })
       
       // Get current user data
       const currentUser = await sql`
@@ -126,15 +129,16 @@ export async function PUT(request: Request) {
         }
       }
 
-      // Prevent email changes as email is the username/account identifier
-      if (email && email !== user.email) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Email không thể thay đổi vì đây là tên tài khoản' 
-          },
-          { status: 400 }
-        )
+      // Handle avatar upload
+      let avatarUrl = null
+      if (avatar) {
+        const bytes = await avatar.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+        const fileName = Date.now() + '-' + avatar.name
+        const uploadPath = path.join(process.cwd(), 'public/uploads', fileName)
+        
+        await writeFile(uploadPath, buffer)
+        avatarUrl = '/uploads/' + fileName
       }
 
       // Prepare update data
@@ -143,12 +147,11 @@ export async function PUT(request: Request) {
       }
 
       if (name) updateData.name = name
-      // Email is not allowed to be updated as it's the account identifier
       if (newPassword) {
         updateData.password_hash = await bcrypt.hash(newPassword, 12)
       }
 
-      // Update user - build query dynamically based on what needs to be updated
+      // Build dynamic update query
       let updateQuery = 'UPDATE users SET '
       const updateValues: any[] = []
       let paramIndex = 1
@@ -165,7 +168,13 @@ export async function PUT(request: Request) {
         paramIndex++
       }
       
-      updateQuery += `updated_at = $${paramIndex} WHERE id = $${paramIndex + 1} RETURNING id, email, name, role, created_at, updated_at`
+      if (avatarUrl) {
+        updateQuery += `avatar = $${paramIndex}, `
+        updateValues.push(avatarUrl)
+        paramIndex++
+      }
+      
+      updateQuery += `updated_at = $${paramIndex} WHERE id = $${paramIndex + 1} RETURNING id, email, name, role, avatar, created_at, updated_at`
       updateValues.push(updateData.updated_at, decoded.userId)
       
       const updatedUser = await sql.query(updateQuery, updateValues)

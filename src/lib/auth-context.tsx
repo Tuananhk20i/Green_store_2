@@ -7,6 +7,7 @@ interface User {
   email: string
   name: string
   role: string
+  avatar?: string
 }
 
 interface AuthContextType {
@@ -47,7 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data.success) {
               // Token is valid, set auth state
               setToken(storedToken)
-              setUser(userData)
+              setUser(data.data)
+              localStorage.setItem('user', JSON.stringify(data.data))
             } else {
               // Token is invalid, clear storage
               localStorage.removeItem('token')
@@ -101,7 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.success) {
           // Token is valid, update auth state
           setToken(storedToken)
-          setUser(userData)
+          setUser(data.data)
+          localStorage.setItem('user', JSON.stringify(data.data))
           return true
         }
       }

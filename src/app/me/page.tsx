@@ -12,6 +12,7 @@ interface UserProfile {
   email: string
   name: string
   role: string
+  avatar?: string
   created_at: string
   updated_at: string
 }
@@ -40,7 +41,23 @@ function ProfilePageContent() {
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [addressLoading, setAddressLoading] = useState(false)
+
+  //Thêm state avatar để quản lý file ảnh và preview
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   
+  //Hàm chọn ảnh và tạo preview
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+
+  if (!file) return
+
+  setAvatarFile(file)
+
+  const previewUrl = URL.createObjectURL(file)
+  setAvatarPreview(previewUrl)
+  }
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -118,27 +135,25 @@ function ProfilePageContent() {
     }
 
     try {
-      const updateData: any = {
-        name: formData.name
-        // Email is not included as it cannot be changed
+      const formUpload = new FormData()
+
+      formUpload.append("name", formData.name)
+
+      if (avatarFile) {
+        formUpload.append("avatar", avatarFile)
       }
 
-      // Only include password fields if new password is provided
       if (formData.newPassword) {
-        updateData.currentPassword = formData.currentPassword
-        updateData.newPassword = formData.newPassword
+        formUpload.append("currentPassword", formData.currentPassword)
+        formUpload.append("newPassword", formData.newPassword)
       }
-
-      console.log('Sending update request with token:', token ? token.substring(0, 20) + '...' : 'No token')
-      console.log('Update data:', updateData)
       
       const response = await fetch('/api/me', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(updateData)
+        body: formUpload
       })
 
       const data = await response.json()
@@ -147,10 +162,8 @@ function ProfilePageContent() {
         setProfile(data.data)
         toast.success('Cập nhật thông tin thành công!')
         
-        // Update auth context if name changed (email cannot change)
-        if (data.data.name !== user?.name) {
-          login(data.data, token!)
-        }
+        // Update auth context with new user data (name, avatar, etc.)
+        login(data.data, token!)
         
         // Clear password fields
         setFormData(prev => ({
@@ -296,6 +309,27 @@ function ProfilePageContent() {
           <p className="text-gray-600 mt-1">Quản lý thông tin tài khoản và địa chỉ của bạn</p>
         </div>
 
+        
+        <div className="flex flex-col items-center mb-6">
+        <label className="cursor-pointer relative group">
+        <img
+      src={avatarPreview || profile?.avatar || "/default-avatar.png"}
+      className="w-28 h-28 rounded-full object-cover border-4 border-gray-200"
+        />
+      <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm transition">
+      Đổi ảnh
+      </div>
+      <input
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleAvatarChange}
+      />
+      </label>
+      <p className="text-sm text-gray-500 mt-2">
+    Nhấn vào ảnh để thay đổi
+      </p>
+      </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Profile Information */}
