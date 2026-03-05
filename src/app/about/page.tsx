@@ -152,6 +152,67 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* 4. SCIENCE: HỆ THỐNG KIỂM ĐỊNH (KIẾN THỨC) */}
+      <section className="py-32 bg-white relative">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+          <div className="space-y-10">
+            <div>
+              <h2 className="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-3">Kỹ thuật & Hệ thống</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-emerald-950 leading-[1.1]">
+                Nông nghiệp từ <span className="text-lime-600">tư duy khoa học</span>
+              </h3>
+            </div>
+            <div className="space-y-6">
+              {[
+                { t: "Sàng lọc vùng nguyên liệu", d: "Kiểm tra dư lượng kim loại nặng trong đất và nguồn nước ngầm." },
+                { t: "Canh tác không hóa chất", d: "Ưu tiên vi sinh hữu cơ, nói không với thuốc trừ sâu độc hại." },
+                { t: "Kiểm định Lab định kỳ", d: "Gửi mẫu kiểm tra tại các trung tâm độc lập mỗi tuần." },
+                { t: "Truy xuất nguồn gốc QR", d: "Minh bạch mọi công đoạn từ gieo hạt đến khi đóng gói." }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6 group">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold group-hover:bg-emerald-600 group-hover:text-white transition-all">0{i+1}</div>
+                  <div>
+                    <h4 className="font-bold text-lg text-emerald-900 mb-1">{item.t}</h4>
+                    <p className="text-gray-500 leading-relaxed">{item.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+             <div className="rounded-[3rem] overflow-hidden shadow-2xl rotate-2">
+                <Image src="https://images.unsplash.com/photo-1592419044706-39796d40f98c?q=80&w=2000" alt="Lab Test" width={600} height={800} className="object-cover h-[650px]" />
+             </div>
+             <div className="absolute -bottom-10 -left-10 bg-lime-400 p-10 rounded-[2.5rem] shadow-2xl max-w-xs -rotate-3">
+                <p className="text-emerald-950 font-serif italic text-xl leading-snug">"Chúng tôi chọn lọc những trang trại để chọn ra 1 đối tác tin tưởng nhất."</p>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. HUMAN: CHÂN DUNG NGƯỜI GIEO MẦM (TRẢI NGHIỆM) */}
+      <section className="py-32 bg-emerald-950 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-20 items-center">
+          <div className="w-full md:w-1/2 relative">
+            <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-8 border-emerald-900/50 shadow-inner">
+              <Image src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?q=80&w=2000" alt="Farmer" fill className="object-cover" />
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 space-y-8">
+            <h2 className="text-5xl md:text-7xl font-black leading-none italic opacity-20 absolute -top-10 left-0 hidden md:block">HUMANITY</h2>
+            <div className="relative z-10 space-y-6">
+              <h3 className="text-4xl md:text-5xl font-black">Sự tử tế <br/><span className="text-lime-400 underline decoration-white/20 underline-offset-8">trong từng nhịp thở</span></h3>
+              <p className="text-emerald-100/70 text-lg font-light leading-relaxed">
+                Tại Green Store, mỗi mầm xanh là một lời hứa. Chúng tôi thực hiện "Giao kèo công bằng" để người nông dân chỉ cần tập trung vào chất lượng, phần còn lại hãy để chúng tôi lo.
+              </p>
+              <div className="p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 italic font-serif text-emerald-200">
+                "Bạn không chỉ mua một bó rau, bạn đang nuôi dưỡng một cộng đồng nông nghiệp bền vững."
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ================= CALL TO ACTION: CHỐT HẠ ================= */}
       <section className="relative bg-emerald-950 text-white overflow-hidden">
   {/* Lớp nền ảnh mờ nghệ thuật - TẠO CẢM XỨNG BỮA ĂN GIA ĐÌNH ẤM CÚNG */}
