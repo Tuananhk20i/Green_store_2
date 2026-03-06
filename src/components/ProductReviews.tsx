@@ -1,16 +1,52 @@
 // src/components/ProductReviews.tsx
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import RatingSummary from './RatingSummary';
+import ReviewFilter from './ReviewFilter';
+import ReviewItem from './ReviewItem';
 
-export default function ProductReviews({ productId, userId, isPurchased }: any) {
+export default function ProductReviews({ productSlug, userId, isPurchased }: any) {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
-  const [images, setImages] = useState<string[]>([]); // URL ảnh sau khi upload
+  const [images, setImages] = useState<string[]>([]);
+  const [reviews, setReviews] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [ratingFilter, setRatingFilter] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch reviews and summary
+  useEffect(() => {
+    fetchSummary();
+    fetchReviews();
+  }, [productSlug, ratingFilter]);
+
+  const fetchSummary = async () => {
+    const res = await fetch(`/api/products/${productSlug}/review-summary`);
+    const data = await res.json();
+    setSummary(data);
+  };
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    const url = ratingFilter
+      ? `/api/products/${productSlug}/reviews?rating=${ratingFilter}`
+      : `/api/products/${productSlug}/reviews`;
+    const res = await fetch(url);
+    const data = await res.json();
+    setReviews(data);
+    setLoading(false);
+  };
 
   const handleSendReview = async () => {
+    // Get product_id from slug for the POST request
+    const productRes = await fetch(`/api/products/${productSlug}`);
+    const productData = await productRes.json();
+    const productId = productData.id;
+
     const response = await fetch('/api/products/reviews', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         product_id: productId,
         user_id: userId,
@@ -23,6 +59,10 @@ export default function ProductReviews({ productId, userId, isPurchased }: any) 
     if (response.ok) {
       alert("Cảm ơn bạn đã để lại đánh giá!");
       setComment('');
+      setRating(5);
+      setImages([]);
+      fetchSummary(); // Refresh summary
+      fetchReviews(); // Refresh reviews
     }
   };
 
@@ -30,8 +70,16 @@ export default function ProductReviews({ productId, userId, isPurchased }: any) 
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-3xl border border-emerald-100 shadow-sm">
       <h3 className="text-2xl font-black text-emerald-950 mb-6">Phản hồi khách hàng</h3>
 
+      {/* RATING SUMMARY */}
+      {Object.keys(summary).length > 0 && (
+        <RatingSummary summary={summary} />
+      )}
+
+      {/* REVIEW FILTER */}
+      <ReviewFilter onChange={setRatingFilter} />
+
       {/* BOX VIẾT ĐÁNH GIÁ */}
-      <div className="mb-10 p-4 bg-emerald-50/50 rounded-2xl">
+      <div className="mb-10 p-4 bg-emerald-50/50 rounded-2xl mt-6">
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -63,27 +111,15 @@ export default function ProductReviews({ productId, userId, isPurchased }: any) 
 
       {/* DANH SÁCH HIỂN THỊ */}
       <div className="space-y-6">
-        {/* Review Item Example */}
-        <div className="pb-6 border-b border-gray-100">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-bold text-emerald-950">Khách hàng ẩn danh</span>
-            {isPurchased && (
-              <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Đã mua hàng</span>
-            )}
-          </div>
-          
-          {/* Chỉ hiện sao nếu có rating (chủ động) */}
-          <div className="flex text-yellow-400 text-sm mb-2">★★★★★</div>
-          
-          <p className="text-gray-600 leading-relaxed text-sm">Sản phẩm rất tươi ngon, đúng chuẩn Green Store's!</p>
-          
-          {/* Chỉ hiện ảnh nếu có mảng images (chủ động) */}
-          <div className="flex gap-2 mt-4">
-            <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-emerald-100">
-               <Image src="https://images.unsplash.com/photo-1542838132-92c53300491e" alt="review" fill className="object-cover" />
-            </div>
-          </div>
-        </div>
+        {loading ? (
+          <div className="text-center py-8">Đang tải đánh giá...</div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">Chưa có đánh giá nào</div>
+        ) : (
+          reviews.map((review: any) => (
+            <ReviewItem key={review.id} review={review} />
+          ))
+        )}
       </div>
     </div>
   );
