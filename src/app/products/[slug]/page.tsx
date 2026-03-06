@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { formatPrice, calculateDiscountPercentage } from '@/lib/price-utils'
 import toast from 'react-hot-toast'
 import { useCart } from '@/lib/cart-context'
+import ProductReviews from '@/components/ProductReviews'
+// Bạn cũng cần lấy thông tin user từ context hoặc session để truyền vào (nếu có)
 // 1. Import thư viện QRCode
 import QRCode from 'qrcode'
 
@@ -337,6 +339,15 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Thêm phần Review ở đây */}
+      <div className="mt-12">
+        <ProductReviews
+          productSlug={params.slug}
+          userId={null} // Truyền ID người dùng nếu đã đăng nhập
+          isPurchased={false} // Logic kiểm tra xem người dùng đã mua hàng chưa
+        />
       </div>
 
       {/* Related Products Section */}
