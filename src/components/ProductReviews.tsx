@@ -75,6 +75,21 @@ export default function ProductReviews({ productSlug, userId, isPurchased }: any
         <RatingSummary summary={summary} />
       )}
 
+      {/* Gallery ảnh từ các đánh giá */}
+      {reviews.some((r: any) => r.images?.length > 0) && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          <h4 className="w-full text-sm font-bold mb-2">Tất cả hình ảnh:</h4>
+          {reviews.flatMap((r: any) => r.images || []).map((img: string, idx: number) => (
+            <img 
+              key={idx} 
+              src={img} 
+              className="w-20 h-20 object-cover rounded-md border border-gray-200" 
+              alt="Review" 
+            />
+          ))}
+        </div>
+      )}
+
       {/* REVIEW FILTER */}
       <ReviewFilter onChange={setRatingFilter} />
 
