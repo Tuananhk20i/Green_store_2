@@ -20,50 +20,50 @@ interface GalleryItem {
 const galleryItems: GalleryItem[] = [
   {
     id: 1,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/1.jpg',
+    image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=684&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Combo rau củ tươi ngon',
     price: 150000
   },
   {
     id: 2,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/2.jpg',
+    image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Hoa quả nhập khẩu cao cấp',
     price: 250000
   },
   {
     id: 3,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/3.jpg',
+    image: 'https://images.unsplash.com/photo-1723475158232-819e29803f4d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Gạo thơm đặc biệt',
     price: 180000
   },
   {
     id: 4,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/4.jpg',
+    image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Thịt tươi sạch',
     price: 200000
   },
   {
     id: 5,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/5.jpg',
+    image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Hải sản tươi sống',
     price: 300000
   },
   {
     id: 6,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
+    image: 'https://images.unsplash.com/photo-1581600140682-d4e68c8cde32?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    title: 'Gia vị tự nhiên thơm ngon',
+    price: 220000
+  },
+  {
+    id: 6,
+    image: 'https://images.unsplash.com/photo-1771576774943-3433ed2239f6?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Đặc sản vùng miền',
     price: 220000
   },
   {
     id: 6,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
-    title: 'Đặc sản vùng miền',
-    price: 220000
-  },
-  {
-    id: 6,
-    image: 'https://st.ourhtmldemo.com/template/organic_store/images/gallery/6.jpg',
-    title: 'Đặc sản vùng miền',
+    image: 'https://images.unsplash.com/photo-1602153508753-4ace888c10a0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    title: 'Combo dinh dưỡng cho bé',
     price: 220000
   }
 ]

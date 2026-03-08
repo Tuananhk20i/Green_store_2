@@ -1,29 +1,37 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"   // hoặc useSession của NextAuth
 
 export default function ReviewForm({ productId }: any) {
+  const { user } = useAuth();            // thông tin người dùng đã đăng nhập
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState("")
 
-  const [rating,setRating] = useState(5)
-  const [comment,setComment] = useState("")
+  async function submitReview() {
+    if (!user) {
+      alert("Vui lòng đăng nhập!")
+      return
+    }
 
-  async function submitReview(){
-
-    await fetch("/api/reviews",{
-      method:"POST",
-      body:JSON.stringify({
-        product_id:productId,
+    await fetch("/api/products/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_id: productId,
+        user_id: user.id,          // truyền id của user
         rating,
-        comment
+        comment,
+        is_purchased: true,        // hoặc kiểm tra thực tế người dùng đã mua
+        images: []                 // nếu có
       })
     })
 
+    // …có thể đặt lại state / thông báo thành công
   }
 
-  return(
-
+  return (
     <div className="border rounded p-5 mt-6">
-
       <h3 className="font-semibold mb-3">
         Viết đánh giá
       </h3>
@@ -59,6 +67,5 @@ export default function ReviewForm({ productId }: any) {
       </button>
 
     </div>
-
   )
 }
