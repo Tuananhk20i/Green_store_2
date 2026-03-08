@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   // Tắt error overlay (popup báo lỗi đỏ)
   reactStrictMode: false,
   // Cấu hình cho external images (ảnh demo - CHỈ DÙNG DEV)
-  images: {
+  /*images: {
     remotePatterns: [
       {
         protocol: 'https',
@@ -35,6 +35,18 @@ const nextConfig: NextConfig = {
         hostname: 'images.pexels.com',
       }
       
+    ],
+  },*/
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Cho phép tất cả các nguồn ảnh từ HTTPS (Cực kỳ hữu dụng khi làm Dev)
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost', // Cho phép ảnh từ localhost nếu bạn chạy local
+      },
     ],
   },
 };
