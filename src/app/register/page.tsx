@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
+import { User, Mail, Lock, MapPin, ArrowRight, Leaf } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -35,38 +36,29 @@ export default function RegisterPage() {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           password: formData.password,
-            role: formData.role,
-            line1: formData.line1,
-            city: formData.city,
-            district: formData.district,
-            ward: formData.ward
+          role: formData.role,
+          line1: formData.line1,
+          city: formData.city,
+          district: formData.district,
+          ward: formData.ward
         })
       })
 
       const data = await response.json()
       
       if (data.success) {
-        // Use auth context to update state
         login(data.data.user, data.data.token)
-        
-        // Redirect based on user role
-        if (data.data.user.role === 'admin') {
-          router.push('/admin/orders')
-        } else {
-          router.push('/')
-        }
+        toast.success('Đăng ký thành công! Chào mừng bạn.')
+        data.data.user.role === 'admin' ? router.push('/admin/orders') : router.push('/')
       } else {
         toast.error(data.error || 'Đăng ký thất bại')
       }
     } catch (error) {
-      console.error('Register error:', error)
       toast.error('Có lỗi xảy ra khi đăng ký')
     } finally {
       setLoading(false)
@@ -74,153 +66,103 @@ export default function RegisterPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const inputClass = "w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-lime-500 transition-all outline-none"
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-blue-light pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gradient-blue animate-fade-in">
-            Tạo tài khoản mới
+    <div className="min-h-screen flex items-center justify-center bg-[#f8faf7] pt-28 pb-12 px-4 relative overflow-hidden">
+      {/* Yếu tố trang trí: Chiếc lá mờ phía sau */}
+      <Leaf className="absolute -top-10 -right-10 w-64 h-64 text-lime-100 rotate-12 pointer-events-none" />
+      <Leaf className="absolute -bottom-10 -left-10 w-48 h-48 text-lime-50 -rotate-12 pointer-events-none" />
+
+      <div className="max-w-xl w-full space-y-8 relative z-10">
+        <div className="text-center">
+          <div className="inline-flex p-4 bg-white rounded-3xl shadow-sm mb-4">
+             {/* Logo giả lập từ mô tả: Chồi non và Lá */}
+             <div className="flex items-center justify-center w-12 h-12 bg-lime-500 rounded-2xl text-white">
+                <Leaf className="w-8 h-8" />
+             </div>
+          </div>
+          <h2 className="text-4xl font-black text-gray-900 tracking-tight">
+            Khởi đầu <span className="text-lime-600">Sống Xanh</span>
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Hoặc{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
-              đăng nhập với tài khoản có sẵn
-            </Link>
+          <p className="mt-3 text-gray-500 font-medium">
+            Gia nhập cộng đồng Green Store ngay hôm nay
           </p>
         </div>
         
-        <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg animate-scale-in" onSubmit={handleSubmit}>
-          
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Họ và tên
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-300"
-                placeholder="Nhập họ và tên"
-              />
+        <form className="mt-8 bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-lime-100/50 border border-gray-100" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Họ và tên */}
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input name="name" type="text" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Họ và tên" />
             </div>
             
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-300"
-                placeholder="Nhập email của bạn"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Loại tài khoản
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-blue-200 bg-white rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-300"
-              >
-                <option value="buyer">Khách hàng</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="line1" className="block text-sm font-medium text-gray-700">
-                Địa chỉ (Số nhà, đường)
-              </label>
-              <input
-                id="line1"
-                name="line1"
-                type="text"
-                value={formData.line1}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-300"
-                placeholder="Số nhà, tên đường"
-              />
+            {/* Email */}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input name="email" type="email" required value={formData.email} onChange={handleChange} className={inputClass} placeholder="Email" />
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <label htmlFor="ward" className="block text-sm font-medium text-gray-700">Phường/Xã</label>
-                <input id="ward" name="ward" value={formData.ward} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-blue-200 rounded-lg" />
-              </div>
-              <div>
-                <label htmlFor="district" className="block text-sm font-medium text-gray-700">Quận/Huyện</label>
-                <input id="district" name="district" value={formData.district} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-blue-200 rounded-lg" />
-              </div>
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700">Tỉnh/Thành phố</label>
-                <input id="city" name="city" value={formData.city} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-blue-200 rounded-lg" />
-              </div>
+            {/* Địa chỉ cụ thể */}
+            <div className="md:col-span-2 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input name="line1" type="text" value={formData.line1} onChange={handleChange} className={inputClass} placeholder="Số nhà, tên đường" />
+            </div>
+
+            {/* Phường/Xã */}
+            <input name="ward" value={formData.ward} onChange={handleChange} className={inputClass} placeholder="Phường/Xã" />
+            
+            {/* Quận/Huyện */}
+            <input name="district" value={formData.district} onChange={handleChange} className={inputClass} placeholder="Quận/Huyện" />
+
+            {/* Tỉnh/Thành phố */}
+            <div className="md:col-span-2">
+              <input name="city" value={formData.city} onChange={handleChange} className={inputClass} placeholder="Tỉnh/Thành phố" />
             </div>
             
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mật khẩu
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-300"
-                placeholder="Nhập mật khẩu"
-              />
+            {/* Mật khẩu */}
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input name="password" type="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Mật khẩu" />
             </div>
             
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Xác nhận mật khẩu
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-all duration-300"
-                placeholder="Nhập lại mật khẩu"
-              />
+            {/* Xác nhận mật khẩu */}
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} placeholder="Xác nhận mật khẩu" />
             </div>
           </div>
 
-          <div>
+          <div className="mt-8 space-y-4">
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-blue hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105"
+              className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-lime-600 hover:bg-lime-700 text-white font-bold rounded-2xl shadow-lg shadow-lime-200 transition-all transform active:scale-[0.98] disabled:opacity-50"
             >
-              {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
+              {loading ? 'Đang tạo tài khoản...' : (
+                <>
+                  TẠO TÀI KHOẢN NGAY <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </button>
+
+            <div className="text-center pt-2">
+              <p className="text-sm text-gray-500 font-medium">
+                Đã có tài khoản?{' '}
+                <Link href="/login" className="text-lime-600 hover:text-lime-700 font-bold underline underline-offset-4">
+                  Đăng nhập tại đây
+                </Link>
+              </p>
+            </div>
           </div>
 
-          <div className="text-center">
-            <Link href="/" className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200">
-              ← Quay lại trang chủ
+          <div className="mt-8 pt-6 border-t border-gray-50 flex justify-center">
+            <Link href="/" className="text-sm font-bold text-gray-400 hover:text-lime-600 transition-colors flex items-center gap-2">
+              ← Quay về trang chủ
             </Link>
           </div>
         </form>
