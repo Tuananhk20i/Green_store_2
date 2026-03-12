@@ -342,7 +342,7 @@ export const posts = [
   title: 'Hành vi mua thực phẩm 2025: Người tiêu dùng đang thay đổi như thế nào?',
   date: '2025-06-05',
   excerpt: 'Từ mua trực tiếp sang mua online, từ giá rẻ sang chất lượng – hành vi tiêu dùng thực phẩm đang bước vào giai đoạn chuyển mình mạnh mẽ.',
-  image: 'https://images.unsplash.com/photo-1556742400-b5b7c512fef3?auto=format&fit=crop&w=1200&q=60',
+  image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?q=80&w=1142&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   content: `
     <article class="prose prose-lg max-w-none">
       <h2>🛒 Sự bùng nổ của mua sắm online</h2>

@@ -50,12 +50,13 @@ export default function ProductDetailPage() {
   // 3. Hàm tạo mã QR từ URL sản phẩm
   const generateQR = async (slug: string) => {
     try {
-      const url = `${window.location.origin}/products/${slug}`
+      // Đường dẫn trỏ thẳng tới trang truy xuất nguồn gốc
+      const url = `${window.location.origin}/products/${slug}/traceability`
       const qrDataUrl = await QRCode.toDataURL(url, {
         width: 150,
         margin: 2,
         color: {
-          dark: '#527a2d', // Màu xanh đặc trưng của dự án
+          dark: '#527a2d', // Sử dụng màu xanh đặc trưng của dự án
           light: '#ffffff'
         }
       })
