@@ -8,32 +8,56 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = Object.fromEntries(searchParams.entries());
-    
+
+    // Convert query params
+    const query: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      query[key] = value;
+    });
+
+    // Verify checksum + extract data
     const { isValid, orderId, amount } = verifyReturnUrl(query);
-    
+
     if (!isValid) {
-      console.error('[VNPay] Invalid return URL');
-      return redirect('/payment/failed');
+      console.error('[VNPay] Invalid checksum');
+      return redirect(`${process.env.NEXTAUTH_URL}/payment/failed`);
     }
 
     const vnp_ResponseCode = searchParams.get('vnp_ResponseCode');
     const isSuccess = vnp_ResponseCode === '00';
 
-    // Update order status
+    // ⚠️ Validate orderId
+    if (!orderId || isNaN(Number(orderId))) {
+      console.error('[VNPay] Invalid orderId:', orderId);
+      return redirect(`${process.env.NEXTAUTH_URL}/payment/failed`);
+    }
+
+    // Update order
     await sql`
       UPDATE orders 
-      SET payment_status = ${isSuccess ? 'PAID' : 'FAILED'},
-          status = ${isSuccess ? 'PROCESSING' : 'CANCELLED'},
-          paid_amount = ${isSuccess ? amount : 0},
-          paid_at = ${isSuccess ? new Date() : null}
+      SET 
+        payment_status = ${isSuccess ? 'PAID' : 'FAILED'},
+        status = ${isSuccess ? 'PROCESSING' : 'CANCELLED'},
+        paid_amount = ${isSuccess ? amount : 0},
+        paid_at = ${isSuccess ? new Date() : null},
+        updated_at = NOW()
       WHERE id = ${Number(orderId)}
     `;
 
-    // Redirect to appropriate page
-    return redirect(isSuccess ? '/payment/success' : '/payment/failed');
+    console.log('[VNPay] Payment result:', {
+      orderId,
+      isSuccess,
+      amount,
+      code: vnp_ResponseCode,
+    });
+
+    // Redirect
+    return redirect(
+      `${process.env.NEXTAUTH_URL}/payment/${isSuccess ? 'success' : 'failed'}`
+    );
+
   } catch (error) {
     console.error('[VNPay Return Error]:', error);
-    return redirect('/payment/failed');
+    return redirect(`${process.env.NEXTAUTH_URL}/payment/failed`);
   }
 }
