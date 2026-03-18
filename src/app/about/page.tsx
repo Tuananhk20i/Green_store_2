@@ -30,7 +30,7 @@ export default function AboutPage() {
           </span>
           <h1 className="text-5xl md:text-8xl font-black leading-tight tracking-tighter mb-6">
             NƠI ĐẤT LÀNH <br/> 
-            <span className="bg-gradient-to-b from-emerald-300 to-lime-300 bg-clip-text text-transparent">NẢY MẦM HẠNH PHÚC</span>
+            <span className="bg-gradient-to-b from-emerald-300 to-lime-300 bg-clip-text text-transparent">TẠO NÊN HẠNH PHÚC</span>
           </h1>
           <p className="max-w-2xl mx-auto text-lg md:text-xl font-light text-emerald-50/80 leading-relaxed">
             Green Store ra đời từ ước mơ mang những thức quà tinh túy nhất của nông nghiệp Việt, 
@@ -184,7 +184,7 @@ export default function AboutPage() {
                 <Image src="https://images.unsplash.com/photo-1592419044706-39796d40f98c?q=80&w=2000" alt="Lab Test" width={600} height={800} className="object-cover h-[650px]" />
              </div>
              <div className="absolute -bottom-10 -left-10 bg-lime-400 p-10 rounded-[2.5rem] shadow-2xl max-w-xs -rotate-3">
-                <p className="text-emerald-950 font-serif italic text-xl leading-snug">"Chúng tôi chọn lọc những trang trại để chọn ra 1 đối tác tin tưởng nhất."</p>
+                <p className="text-emerald-950 font-serif italic text-xl leading-snug">"Chúng tôi chọn lọc kỹ càng để hợp tác với những trang trại đáng tin cậy."</p>
              </div>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function AboutPage() {
                 Tại Green Store, mỗi mầm xanh là một lời hứa. Chúng tôi thực hiện "Giao kèo công bằng" để người nông dân chỉ cần tập trung vào chất lượng, phần còn lại hãy để chúng tôi lo.
               </p>
               <div className="p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 italic font-serif text-emerald-200">
-                "Bạn không chỉ mua một bó rau, bạn đang nuôi dưỡng một cộng đồng nông nghiệp bền vững."
+                "Mỗi bó rau bạn chọn là một bước nuôi dưỡng nông nghiệp phát triển."
               </div>
             </div>
           </div>
