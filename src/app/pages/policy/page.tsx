@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { ChevronRight, ShieldCheck, Truck, RotateCcw, CreditCard, FileText, Info, ArrowRight } from 'lucide-react'
 
@@ -6,7 +7,7 @@ export const metadata = {
   description: 'Chính sách giao hàng, hoàn trả, bảo mật và điều khoản sử dụng tại Green Store',
 }
 
-export default function PolicyPage() {
+function PolicyContent() {
   const policies = [
     {
       id: 'shipping',
@@ -198,5 +199,17 @@ export default function PolicyPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+export default function PolicyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-lime-600"></div>
+      </div>
+    }>
+      <PolicyContent />
+    </Suspense>
   )
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { posts } from '@/lib/news-data';
@@ -8,7 +9,7 @@ export const metadata = {
   description: 'Các tin tức mới nhất và bài viết nổi bật từ Green Store',
 };
 
-export default function LatestNewsPage() {
+function LatestNewsContent() {
   // Sắp xếp bài viết mới nhất lên đầu
   const sorted = [...posts].sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
 
@@ -154,5 +155,18 @@ export default function LatestNewsPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function LatestNewsPage() {
+  return (
+    // Bao bọc trực tiếp ở cấp độ Page để Next.js tách biệt quá trình render tĩnh
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-600"></div>
+      </div>
+    }>
+      <LatestNewsContent />
+    </Suspense>
   );
 }

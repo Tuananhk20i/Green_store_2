@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react' // 1. Thêm Suspense vào import
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import toast from 'react-hot-toast'
 import { User, Mail, Lock, MapPin, ArrowRight, Leaf } from 'lucide-react'
 
-export default function RegisterPage() {
+// 2. Tách nội dung form thành một component riêng
+function RegisterContent() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -73,14 +74,12 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8faf7] pt-28 pb-12 px-4 relative overflow-hidden">
-      {/* Yếu tố trang trí: Chiếc lá mờ phía sau */}
       <Leaf className="absolute -top-10 -right-10 w-64 h-64 text-lime-100 rotate-12 pointer-events-none" />
       <Leaf className="absolute -bottom-10 -left-10 w-48 h-48 text-lime-50 -rotate-12 pointer-events-none" />
 
       <div className="max-w-xl w-full space-y-8 relative z-10">
         <div className="text-center">
           <div className="inline-flex p-4 bg-white rounded-3xl shadow-sm mb-4">
-             {/* Logo giả lập từ mô tả: Chồi non và Lá */}
              <div className="flex items-center justify-center w-12 h-12 bg-lime-500 rounded-2xl text-white">
                 <Leaf className="w-8 h-8" />
              </div>
@@ -95,42 +94,33 @@ export default function RegisterPage() {
         
         <form className="mt-8 bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-lime-100/50 border border-gray-100" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Họ và tên */}
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input name="name" type="text" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Họ và tên" />
             </div>
             
-            {/* Email */}
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input name="email" type="email" required value={formData.email} onChange={handleChange} className={inputClass} placeholder="Email" />
             </div>
 
-            {/* Địa chỉ cụ thể */}
             <div className="md:col-span-2 relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input name="line1" type="text" value={formData.line1} onChange={handleChange} className={inputClass} placeholder="Số nhà, tên đường" />
             </div>
 
-            {/* Phường/Xã */}
             <input name="ward" value={formData.ward} onChange={handleChange} className={inputClass} placeholder="Phường/Xã" />
-            
-            {/* Quận/Huyện */}
             <input name="district" value={formData.district} onChange={handleChange} className={inputClass} placeholder="Quận/Huyện" />
 
-            {/* Tỉnh/Thành phố */}
             <div className="md:col-span-2">
               <input name="city" value={formData.city} onChange={handleChange} className={inputClass} placeholder="Tỉnh/Thành phố" />
             </div>
             
-            {/* Mật khẩu */}
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input name="password" type="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Mật khẩu" />
             </div>
             
-            {/* Xác nhận mật khẩu */}
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} placeholder="Xác nhận mật khẩu" />
@@ -168,5 +158,18 @@ export default function RegisterPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+// 3. Export default component chính với Suspense
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#f8faf7]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-600"></div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   )
 }

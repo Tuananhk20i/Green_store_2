@@ -7,6 +7,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { Toaster } from "react-hot-toast";
 import { AdminLayoutWrapper } from "@/components/AdminLayoutWrapper";
 import ChatWidget from "@/components/ChatWidget";
+import { Suspense } from "react"; //
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,10 +25,12 @@ export default function RootLayout({
     <html lang="vi">
       <body className={inter.className}>
         <AuthProvider>
+          <Suspense fallback={null}>
           <SearchProvider>
             <CartProvider>
               <AdminLayoutWrapper>
-                {children}
+                {/* 2. Bao bọc children bằng Suspense */}
+                  {children}
               </AdminLayoutWrapper>
               <Toaster
                 position="top-right"
@@ -56,6 +59,7 @@ export default function RootLayout({
               <ChatWidget />
             </CartProvider>
           </SearchProvider>
+          </Suspense>
         </AuthProvider>
       </body>
     </html>

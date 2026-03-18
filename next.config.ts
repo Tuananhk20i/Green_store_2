@@ -8,10 +8,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   // Tắt Next.js DevTools
-  devIndicators: {
-    buildActivity: false, // Tắt indicator build
-    appIsrStatus: false,  // Tắt ISR status
-  },
+  // devIndicators: {
+  //   buildActivity: false, // Tắt indicator build
+  //   appIsrStatus: false,  // Tắt ISR status
+  // },
   // Tắt error overlay (popup báo lỗi đỏ)
   reactStrictMode: false,
   // Cấu hình cho external images (ảnh demo - CHỈ DÙNG DEV)
