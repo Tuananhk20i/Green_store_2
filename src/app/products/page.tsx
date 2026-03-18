@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from "next/navigation"
 import { useSearch } from '@/lib/search-context'
 import ProductCard from '@/components/ProductCard'
@@ -32,7 +32,7 @@ interface Category {
   }
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -456,5 +456,18 @@ export default function ProductsPage() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6a9739] mx-auto"></div>
+        <p className="mt-4 text-gray-500">Đang tải danh sách sản phẩm...</p>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   )
 }
