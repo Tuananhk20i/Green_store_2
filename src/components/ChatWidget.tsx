@@ -58,7 +58,8 @@ export default function ChatWidget() {
     if (!input.trim()) return;
     const messageText = input;
     const userMsg: Msg = { id: String(Date.now()), role: "user", text: messageText };
-    setMessages((s) => [...s, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput("");
     setIsTyping(true);
 
@@ -66,7 +67,16 @@ export default function ChatWidget() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({
+          message: messageText,
+          history: nextMessages
+            .filter((msg) => msg.role !== "system" && msg.text)
+            .slice(-8)
+            .map((msg) => ({
+              role: msg.role,
+              text: msg.text,
+            })),
+        }),
       });
 
       if (!res.ok) {

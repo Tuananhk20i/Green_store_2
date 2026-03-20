@@ -1,4 +1,4 @@
- import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -88,13 +88,35 @@ const tools = [
   },
 ];
 
-const systemPrompt = `Bạn là trợ lý ảo của Green Store - cửa hàng chuyên cung cấp nông sản Việt. Nhiệm vụ:
-1. Khi khách hỏi về sản phẩm, giá cả, danh mục - hãy gọi tool tương ứng để lấy dữ liệu thực.
-2. KHÔNG bịa số liệu. Nếu thiếu thông tin, hỏi lại khách hàng một câu ngắn gọn.
-3. Trả lời tối đa 5 sản phẩm. Nếu sản phẩm đang giảm giá (is_sale=true), hiển thị sale_price.
-4. Luôn thân thiện, lịch sự và hữu ích. Nhấn mạnh các sản phẩm nông sản Việt Nam chất lượng cao, an toàn và tươi ngon.`;
+const systemPrompt = `Ban la tro ly ao cua Green Store - cua hang chuyen cung cap nong san Viet.
+Nhiem vu:
+1. Khi khach hoi ve san pham, gia ca, danh muc, ngan sach, khoang gia hoac muon xem goi y mua hang, hay goi tool de lay du lieu thuc.
+2. Neu tin nhan hien tai la cau noi tiep tu ngu canh truoc do, hay su dung lich su hoi thoai de suy ra nhu cau va tiep tuc goi tool. Khong tra loi chung chung khi co the truy van du lieu that.
+3. Khong bia so lieu hoac san pham. Neu thieu thong tin va khong the suy ra tu lich su, hay hoi lai khach hang mot cau ngan gon.
+4. Tra loi toi da 5 san pham. Neu san pham dang giam gia, uu tien hien thi gia giam.
+5. Tra loi than thien, lich su va huu ich.`;
 
-export async function callGemini(message: string, conversationHistory: any[] = []) {
+type ConversationMessage = {
+  role: 'user' | 'assistant';
+  text: string;
+};
+
+type FunctionCallResult = {
+  name: string;
+  args: Record<string, unknown>;
+};
+
+function buildConversationContext(conversationHistory: ConversationMessage[]) {
+  if (!conversationHistory.length) {
+    return '';
+  }
+
+  return conversationHistory
+    .map((entry) => `${entry.role === 'user' ? 'Khach hang' : 'Tro ly'}: ${entry.text}`)
+    .join('\n');
+}
+
+export async function callGemini(message: string, conversationHistory: ConversationMessage[] = []) {
   if (!process.env.GEMINI_API_KEY) {
     console.warn('[LLM] GEMINI_API_KEY not set');
     return {
@@ -106,40 +128,38 @@ export async function callGemini(message: string, conversationHistory: any[] = [
   try {
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      tools: [{ functionDeclarations: tools as any }],
+      tools: [{ functionDeclarations: tools as never }],
     });
 
-    const chat = model.startChat({
-      history: conversationHistory,
-    });
+    const chat = model.startChat();
+    const conversationContext = buildConversationContext(conversationHistory);
+    const prompt = conversationContext
+      ? `${systemPrompt}\n\nLich su hoi thoai gan day:\n${conversationContext}\n\nTin nhan moi nhat cua khach hang: ${message}`
+      : `${systemPrompt}\n\nKhach hang: ${message}`;
 
-    const result = await chat.sendMessage(`${systemPrompt}\n\nKhách hàng: ${message}`);
+    const result = await chat.sendMessage(prompt);
     const response = result.response;
-
-    // Check if there are function calls
     const functionCalls = response.functionCalls();
 
     if (functionCalls && functionCalls.length > 0) {
       return {
         type: 'function_call',
-        functionCalls: functionCalls.map((fc: any) => ({
+        functionCalls: (functionCalls as FunctionCallResult[]).map((fc) => ({
           name: fc.name,
           args: fc.args,
         })),
       };
     }
 
-    // Regular text response
     return {
       type: 'text',
       text: response.text(),
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[LLM] error calling Gemini:', err);
-    // turn errors into friendly reply
     return {
       type: 'text',
-      text: 'Xin lỗi, không thể kết nối tới dịch vụ LLM. Vui lòng thử lại sau.',
+      text: 'Xin loi, khong the ket noi toi dich vu LLM. Vui long thu lai sau.',
     };
   }
 }

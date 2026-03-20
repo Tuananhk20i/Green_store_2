@@ -6,14 +6,26 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { message } = body;
+    const { message, history } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    const conversationHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (item) =>
+              item &&
+              (item.role === 'user' || item.role === 'assistant') &&
+              typeof item.text === 'string' &&
+              item.text.trim().length > 0
+          )
+          .slice(-8)
+      : [];
+
     // Call Gemini LLM
-    const llmResponse = await callGemini(message);
+    const llmResponse = await callGemini(message, conversationHistory);
 
     // Handle function calls
     if (llmResponse.type === 'function_call' && llmResponse.functionCalls && llmResponse.functionCalls.length > 0) {
