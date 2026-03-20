@@ -47,7 +47,8 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    const searchTerm = parsed.q?.trim() ? `%${parsed.q.trim()}%` : null;
+    const rawSearch = parsed.q?.trim() || '';
+    const searchTerm = rawSearch ? `%${rawSearch}%` : '';
 
     const sortClause = (() => {
       switch (parsed.sort) {
@@ -62,6 +63,10 @@ export async function GET(request: Request) {
           return sql`ORDER BY p.price ASC, p.id DESC`;
       }
     })();
+
+    const searchClause = rawSearch
+      ? sql`AND p.name ILIKE ${searchTerm}`
+      : sql``;
 
     const products = await sql`
       SELECT
@@ -80,7 +85,8 @@ export async function GET(request: Request) {
         c.slug AS category_slug
       FROM products p
       LEFT JOIN categories c ON c.id = p.category_id
-      WHERE (${searchTerm} IS NULL OR p.name ILIKE ${searchTerm})
+      WHERE 1 = 1
+      ${searchClause}
       ${parsed.category_id ? sql`AND p.category_id = ${Number(parsed.category_id)}` : sql``}
       ${parsed.price_min != null ? sql`AND p.price >= ${parsed.price_min}` : sql``}
       ${parsed.price_max != null ? sql`AND p.price <= ${parsed.price_max}` : sql``}
@@ -92,7 +98,8 @@ export async function GET(request: Request) {
     const countResult = await sql`
       SELECT COUNT(*) AS total
       FROM products p
-      WHERE (${searchTerm} IS NULL OR p.name ILIKE ${searchTerm})
+      WHERE 1 = 1
+      ${searchClause}
       ${parsed.category_id ? sql`AND p.category_id = ${Number(parsed.category_id)}` : sql``}
       ${parsed.price_min != null ? sql`AND p.price >= ${parsed.price_min}` : sql``}
       ${parsed.price_max != null ? sql`AND p.price <= ${parsed.price_max}` : sql``}
