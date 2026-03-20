@@ -39,7 +39,8 @@ export async function POST(request: Request) {
             if (args.page) params.set('page', String(args.page));
 
             const searchRes = await fetch(`${getBaseUrl()}/api/products/search?${params.toString()}`);
-            products = await searchRes.json();
+            const searchData = await searchRes.json();
+            products = Array.isArray(searchData) ? searchData : (searchData.data || []);
             reply = products.length > 0 
               ? `Tôi tìm thấy ${products.length} sản phẩm phù hợp:` 
               : 'Hiện chưa có sản phẩm phù hợp. Bạn có thể thử tìm với từ khóa khác hoặc mở rộng bộ lọc.';

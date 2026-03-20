@@ -15,49 +15,124 @@ const QuerySchema = z.object({
   page: z.coerce.number().optional(),
 });
 
+type SearchProductRow = {
+  id: number;
+  name: string;
+  slug: string;
+  brand: string | null;
+  description: string | null;
+  price: number;
+  sale_price: number | null;
+  is_sale: boolean | null;
+  stock: number | null;
+  image_url: string | null;
+  category_id: number | null;
+  category_name: string | null;
+  category_slug: string | null;
+};
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const raw = Object.fromEntries(url.searchParams.entries());
-  const parsed = QuerySchema.parse(raw);
+  const parsed = QuerySchema.parse({
+    ...raw,
+    category_id: raw.category_id ?? raw.category,
+    price_min: raw.price_min ?? raw.minPrice,
+    price_max: raw.price_max ?? raw.maxPrice,
+    sort: raw.sort ?? raw.sortBy,
+  });
 
-  const limit = 10;
-  const offset = ((parsed.page || 1) - 1) * limit;
+  const page = parsed.page || 1;
+  const limit = Number(raw.pageSize) || 10;
+  const offset = (page - 1) * limit;
 
   try {
-    // Build dynamic query using Neon template syntax
-    let rows;
-    
-    // Simple search without complex parameterization
-    if (parsed.q) {
-      const searchTerm = `%${parsed.q}%`;
-      rows = await sql`
-        SELECT id, name AS title, slug, price, sale_price AS price_sale, is_sale, stock, category_id, image_url 
-        FROM products 
-        WHERE name ILIKE ${searchTerm}
-        ${parsed.category_id ? sql`AND category_id = ${Number(parsed.category_id)}` : sql``}
-        ${parsed.price_min != null ? sql`AND price >= ${parsed.price_min}` : sql``}
-        ${parsed.price_max != null ? sql`AND price <= ${parsed.price_max}` : sql``}
-        ${parsed.in_stock_only ? sql`AND stock > 0` : sql``}
-        ORDER BY id DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-    } else {
-      rows = await sql`
-        SELECT id, name AS title, slug, price, sale_price AS price_sale, is_sale, stock, category_id, image_url 
-        FROM products 
-        WHERE 1=1
-        ${parsed.category_id ? sql`AND category_id = ${Number(parsed.category_id)}` : sql``}
-        ${parsed.price_min != null ? sql`AND price >= ${parsed.price_min}` : sql``}
-        ${parsed.price_max != null ? sql`AND price <= ${parsed.price_max}` : sql``}
-        ${parsed.in_stock_only ? sql`AND stock > 0` : sql``}
-        ORDER BY id DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-    }
-    
-    return NextResponse.json(rows);
+    const searchTerm = parsed.q?.trim() ? `%${parsed.q.trim()}%` : null;
+
+    const sortClause = (() => {
+      switch (parsed.sort) {
+        case 'price_desc':
+          return sql`ORDER BY p.price DESC, p.id DESC`;
+        case 'name_asc':
+          return sql`ORDER BY p.name ASC, p.id DESC`;
+        case 'name_desc':
+          return sql`ORDER BY p.name DESC, p.id DESC`;
+        case 'price_asc':
+        default:
+          return sql`ORDER BY p.price ASC, p.id DESC`;
+      }
+    })();
+
+    const products = await sql`
+      SELECT
+        p.id,
+        p.name,
+        p.slug,
+        p.brand,
+        p.description,
+        p.price,
+        p.sale_price,
+        p.is_sale,
+        p.stock,
+        p.image_url,
+        p.category_id,
+        c.name AS category_name,
+        c.slug AS category_slug
+      FROM products p
+      LEFT JOIN categories c ON c.id = p.category_id
+      WHERE (${searchTerm} IS NULL OR p.name ILIKE ${searchTerm})
+      ${parsed.category_id ? sql`AND p.category_id = ${Number(parsed.category_id)}` : sql``}
+      ${parsed.price_min != null ? sql`AND p.price >= ${parsed.price_min}` : sql``}
+      ${parsed.price_max != null ? sql`AND p.price <= ${parsed.price_max}` : sql``}
+      ${parsed.in_stock_only ? sql`AND p.stock > 0` : sql``}
+      ${sortClause}
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    const countResult = await sql`
+      SELECT COUNT(*) AS total
+      FROM products p
+      WHERE (${searchTerm} IS NULL OR p.name ILIKE ${searchTerm})
+      ${parsed.category_id ? sql`AND p.category_id = ${Number(parsed.category_id)}` : sql``}
+      ${parsed.price_min != null ? sql`AND p.price >= ${parsed.price_min}` : sql``}
+      ${parsed.price_max != null ? sql`AND p.price <= ${parsed.price_max}` : sql``}
+      ${parsed.in_stock_only ? sql`AND p.stock > 0` : sql``}
+    `;
+
+    const mappedProducts = (products as SearchProductRow[]).map((product) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brand: product.brand,
+      description: product.description,
+      price: product.price,
+      salePrice: product.sale_price,
+      isSale: product.is_sale || false,
+      stock: product.stock || 0,
+      imageUrl: product.image_url,
+      category: product.category_id
+        ? {
+            id: product.category_id,
+            name: product.category_name,
+            slug: product.category_slug,
+          }
+        : null,
+    }));
+
+    const total = Number(countResult[0]?.total || 0);
+
+    return NextResponse.json({
+      success: true,
+      data: mappedProducts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error('search error', err);
-    return NextResponse.json({ error: 'search failed' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'search failed' }, { status: 500 });
   }
 }
