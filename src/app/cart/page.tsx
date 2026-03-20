@@ -294,7 +294,8 @@ export default function CartPage() {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -325,6 +326,7 @@ export default function CartPage() {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
             },
             credentials: 'same-origin', // Change this to same-origin
             body: JSON.stringify({

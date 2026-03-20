@@ -7,7 +7,7 @@ interface SearchSuggestion {
   name: string
   slug?: string
   category_name?: string
-  type: 'product' | 'category'
+  type: 'product' | 'category' | 'brand'
 }
 
 export default function HeaderSearchBox() {
@@ -78,7 +78,7 @@ export default function HeaderSearchBox() {
     if (query.trim()) {
       setShowSearch(false)
       setShowSuggestions(false)
-      router.push(`/products?search=${encodeURIComponent(query)}`)
+      router.push(`/products?q=${encodeURIComponent(query.trim())}`)
     }
   }
 
@@ -91,6 +91,8 @@ export default function HeaderSearchBox() {
       router.push(`/products/${suggestion.slug}`)
     } else if (suggestion.type === 'category' && suggestion.slug) {
       router.push(`/categories/${suggestion.slug}`)
+    } else if (suggestion.type === 'brand' && suggestion.name) {
+      router.push(`/products?q=${encodeURIComponent(suggestion.name)}`)
     }
   }
 
@@ -166,9 +168,13 @@ export default function HeaderSearchBox() {
                           <svg className="w-4 h-4 text-[#6a9739]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                           </svg>
-                        ) : (
+                        ) : suggestion.type === 'category' ? (
                           <svg className="w-4 h-4 text-[#ff6b35]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
                       </div>
@@ -183,7 +189,7 @@ export default function HeaderSearchBox() {
                         )}
                       </div>
                       <div className="text-xs text-gray-400">
-                        {suggestion.type === 'product' ? 'SP' : 'DM'}
+                        {suggestion.type === 'product' ? 'SP' : suggestion.type === 'category' ? 'DM' : 'BR'}
                       </div>
                     </button>
                   ))}

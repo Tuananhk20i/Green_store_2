@@ -24,11 +24,17 @@ export async function POST(request: NextRequest) { // Sử dụng NextRequest
     }
 
     try {
+      const ipAddr =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        '127.0.0.1';
+
       // Create VNPay payment URL
       const paymentUrl = createPaymentUrl({
         amount,
         orderInfo,
         orderId: orderId.toString(),
+        ipAddr,
       });
 
       if (!paymentUrl || !paymentUrl.startsWith('https://')) {

@@ -4,11 +4,13 @@ import OrderSummary from '@/components/OrderSummary';
 import { useRouter } from 'next/navigation';
 import { PaymentMethod } from '@/types/payment';
 import { useCart } from '@/lib/cart-context';
+import { useAuth } from '@/lib/auth-context';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const { cart, calculateTotal } = useCart();
+  const { token } = useAuth();
   
   // Tính toán các giá trị
   const cartTotal = calculateTotal();
@@ -25,6 +27,8 @@ export default function CheckoutPage() {
   const handlePayment = async (paymentMethod: PaymentMethod) => {
     setIsProcessing(true);
     try {
+      if (!token) throw new Error('Authentication required');
+
       // 1. Tạo đơn hàng
       // Lấy thông tin từ form
       const form = document.querySelector('form');
@@ -32,7 +36,10 @@ export default function CheckoutPage() {
       
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           items: cart?.items,
           shipping: {
@@ -54,7 +61,10 @@ export default function CheckoutPage() {
         // Tạo URL thanh toán VNPay
         const vnpayRes = await fetch('/api/payment/vnpay/create', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify({
             orderId,
             amount: total,

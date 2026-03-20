@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import querystring from 'querystring';
 
 interface VNPayParams {
   amount: number;
@@ -8,6 +7,7 @@ interface VNPayParams {
   bankCode?: string;
   language?: string;
   orderId: string;
+  ipAddr: string;
 }
 
 export function createPaymentUrl({
@@ -17,6 +17,7 @@ export function createPaymentUrl({
   bankCode = '',
   language = 'vn',
   orderId,
+  ipAddr,
 }: VNPayParams): string {
 
   // ✅ LẤY ENV BÊN TRONG FUNCTION (QUAN TRỌNG)
@@ -37,24 +38,11 @@ export function createPaymentUrl({
       ? `https://${process.env.VERCEL_URL}/api/payment/vnpay/return`
       : 'http://localhost:3000/api/payment/vnpay/return');
 
-  const date = new Date();
-  const createDate = `${date.getFullYear()}${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, '0')}${date
-    .getDate()
-    .toString()
-    .padStart(2, '0')}${date
-    .getHours()
-    .toString()
-    .padStart(2, '0')}${date
-    .getMinutes()
-    .toString()
-    .padStart(2, '0')}${date
-    .getSeconds()
-    .toString()
-    .padStart(2, '0')}`;
+  const createDate = formatVnpDate(new Date());
+  const expireDate = formatVnpDate(new Date(Date.now() + 15 * 60 * 1000));
 
   const currCode = 'VND';
+  const normalizedOrderInfo = normalizeOrderInfo(orderInfo, orderId);
 
   const vnpParams: Record<string, string | number> = {
     vnp_Version: '2.1.0',
@@ -63,15 +51,13 @@ export function createPaymentUrl({
     vnp_Locale: language,
     vnp_CurrCode: currCode,
     vnp_TxnRef: orderId,
-    vnp_OrderInfo: orderInfo,
+    vnp_OrderInfo: normalizedOrderInfo,
     vnp_OrderType: orderType,
     vnp_Amount: amount * 100,
     vnp_ReturnUrl: returnUrl,
-    vnp_IpAddr:
-      process.env.NODE_ENV === 'production'
-        ? process.env.SERVER_IP || '127.0.0.1'
-        : '127.0.0.1',
+    vnp_IpAddr: ipAddr,
     vnp_CreateDate: createDate,
+    vnp_ExpireDate: expireDate,
   };
 
   if (bankCode) {
@@ -79,10 +65,7 @@ export function createPaymentUrl({
   }
 
   const sortedParams = sortObject(vnpParams);
-
-  const signData = Object.entries(sortedParams)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('&');
+  const signData = stringifyVnpParams(sortedParams);
 
   const hmac = crypto.createHmac('sha512', secretKey);
   const signed = hmac
@@ -91,7 +74,7 @@ export function createPaymentUrl({
 
   sortedParams['vnp_SecureHash'] = signed;
 
-  return `${vnpUrl}?${querystring.stringify(sortedParams)}`;
+  return `${vnpUrl}?${stringifyVnpParams(sortedParams)}`;
 }
 
 export function verifyReturnUrl(query: Record<string, string>) {
@@ -115,7 +98,7 @@ export function verifyReturnUrl(query: Record<string, string>) {
   delete vnpParams['vnp_SecureHashType'];
 
   const sortedParams = sortObject(vnpParams);
-  const signData = querystring.stringify(sortedParams);
+  const signData = stringifyVnpParams(sortedParams);
 
   const hmac = crypto.createHmac('sha512', secretKey);
   const signed = hmac
@@ -132,8 +115,8 @@ export function verifyReturnUrl(query: Record<string, string>) {
   };
 }
 
-function sortObject(obj: any) {
-  const sorted: any = {};
+function sortObject(obj: Record<string, string | number>) {
+  const sorted: Record<string, string | number> = {};
   const keys = Object.keys(obj).sort();
 
   for (const key of keys) {
@@ -143,4 +126,41 @@ function sortObject(obj: any) {
   }
 
   return sorted;
+}
+
+function stringifyVnpParams(
+  obj: Record<string, string | number>
+) {
+  return Object.entries(obj)
+    .map(([key, value]) => {
+      const normalizedValue = String(value);
+      return `${encodeURIComponent(key)}=${encodeURIComponent(normalizedValue).replace(
+        /%20/g,
+        '+'
+      )}`;
+    })
+    .join('&');
+}
+
+function formatVnpDate(date: Date) {
+  const vietnamDate = new Date(
+    date.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })
+  );
+
+  return `${vietnamDate.getFullYear()}${String(vietnamDate.getMonth() + 1).padStart(2, '0')}${String(
+    vietnamDate.getDate()
+  ).padStart(2, '0')}${String(vietnamDate.getHours()).padStart(2, '0')}${String(
+    vietnamDate.getMinutes()
+  ).padStart(2, '0')}${String(vietnamDate.getSeconds()).padStart(2, '0')}`;
+}
+
+function normalizeOrderInfo(orderInfo: string, orderId: string) {
+  const asciiText = orderInfo
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return asciiText || `Thanh toan don hang ${orderId}`;
 }
