@@ -42,7 +42,7 @@ export default function TraceabilityPage() {
   // Mảng chứa các hình ảnh chứng chỉ bạn đã tải lên (đảm bảo file đã nằm trong thư mục /public)
   const certificateImages = [
     '/vietgap_1.jpg',
-    '/vietgap_2.jpg',
+    '/vietgap_2.png',
     '/vietgap_3.jpeg',
     '/vietgap_4.jpg'
   ]
